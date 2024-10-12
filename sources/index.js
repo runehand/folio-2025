@@ -1,8 +1,11 @@
 import * as THREE from 'three/webgpu'
+import CameraControls from 'camera-controls'
+CameraControls.install( { THREE: THREE } )
 
 const scene = new THREE.Scene()
 const renderer = new THREE.WebGPURenderer()
 renderer.setSize(window.innerWidth, window.innerHeight)
+renderer.domElement.classList.add('experience')
 document.body.append(renderer.domElement)
 
 const dummy = new THREE.Mesh(
@@ -12,7 +15,21 @@ const dummy = new THREE.Mesh(
 scene.add(dummy)
 
 const camera = new THREE.PerspectiveCamera(25, window.innerWidth / window.innerHeight, 0.1, 100)
-camera.position.z = 3
+camera.position.set(1, 2, 3)
 scene.add(camera)
 
-renderer.renderAsync(scene, camera)
+const cameraControls = new CameraControls(camera, renderer.domElement)
+
+let lastTime = 0
+const tick = (time) =>
+{
+    const delta = time - lastTime
+    lastTime = time
+    
+    cameraControls.update(delta / 1000)
+    renderer.renderAsync(scene, camera)
+
+    requestAnimationFrame(tick)
+}
+
+tick()
