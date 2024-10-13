@@ -1,8 +1,5 @@
 import * as THREE from 'three/webgpu'
-import CameraControls from 'camera-controls'
 import { Game } from './Game.js'
-
-CameraControls.install( { THREE: THREE } )
 
 export class World
 {

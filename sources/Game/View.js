@@ -15,6 +15,9 @@ export class View
         this.game.world.scene.add(this.camera)
 
         this.cameraControls = new CameraControls(this.camera, this.game.domElement)
+        this.cameraControls.smoothTime = 0.075
+        this.cameraControls.draggingSmoothTime = 0.075
+        this.cameraControls.dollySpeed = 0.2
 
         this.game.time.events.on('tick', () =>
         {
