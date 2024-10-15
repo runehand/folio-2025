@@ -15,8 +15,12 @@ export class Vehicle
 
         this.game.time.events.on('tick', () =>
         {
-            this.update()
-        })
+            this.updatePrePhysics()
+        }, 1)
+        this.game.time.events.on('tick', () =>
+        {
+            this.updatePostPhysics()
+        }, 3)
     }
 
     setChassis()
@@ -64,6 +68,8 @@ export class Vehicle
 
         this.wheels = {}
         this.wheels.items = []
+        this.wheels.engineForce = 0
+        this.wheels.steering = 0
         this.wheels.visualSteering = 0
 
         for(let i = 0; i < 4; i++)
@@ -105,35 +111,41 @@ export class Vehicle
         }
     }
 
-    update()
+    updatePrePhysics()
     {
-        let wheelEngineForce = 0
+        this.wheels.engineForce = 0
         if(this.game.controls.keys.up)
-            wheelEngineForce = 10
+            this.wheels.engineForce = 10
         if(this.game.controls.keys.down)
-            wheelEngineForce = -10
+            this.wheels.engineForce = -10
 
-        let steering = 0
+        this.wheels.steering = 0
         if(this.game.controls.keys.right)
-            steering = -0.5
+            this.wheels.steering = -0.5
         if(this.game.controls.keys.left)
-            steering = 0.5
-        this.controller.setWheelSteering(0, steering)
-        this.controller.setWheelSteering(2, steering)
+            this.wheels.steering = 0.5
+        this.controller.setWheelSteering(0, this.wheels.steering)
+        this.controller.setWheelSteering(2, this.wheels.steering)
 
-        this.wheels.visualSteering += (steering - this.wheels.visualSteering) * this.game.time.delta * 16
+        for(let i = 0; i < 4; i++)
+        {
+            this.controller.setWheelEngineForce(i, this.wheels.engineForce)
+            this.controller.setWheelBrake(i, 0.04)
+        }
+    }
+
+    updatePostPhysics()
+    {
+        this.wheels.visualSteering += (this.wheels.steering - this.wheels.visualSteering) * this.game.time.delta * 16
 
         for(let i = 0; i < 4; i++)
         {
             const wheel = this.wheels.items[i]
-            this.controller.setWheelEngineForce(i, wheelEngineForce)
-            this.controller.setWheelBrake(i, 0.04)
 
+            wheel.visual.rotation.x += this.wheels.engineForce * 0.01
             wheel.visual.rotation.y = this.wheels.visualSteering
+
             wheel.visual.position.y = wheel.basePosition.y - this.controller.wheelSuspensionLength(i)
-
-            wheel.visual.rotation.x += wheelEngineForce * 0.01
         }
-
     }
 }

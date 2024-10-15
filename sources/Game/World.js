@@ -21,7 +21,7 @@ export class World
         this.game.time.events.on('tick', () =>
         {
             this.update()
-        }, 999)
+        }, 4)
     }
 
     setGround()

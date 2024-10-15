@@ -24,7 +24,7 @@ export class PhysicsDebug
         this.game.time.events.on('tick', () =>
         {
             this.update()
-        })
+        }, 3)
     }
     update()
     {

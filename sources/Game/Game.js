@@ -21,9 +21,9 @@ export class Game
         // Setup
         this.domElement = document.querySelector('.game')
 
+        this.controls = new Controls()
         this.time = new Time()
         this.viewport = new Viewport(this.domElement)
-        this.controls = new Controls()
         this.physics = new Physics()
         this.world = new World()
         this.physicsDebug = new PhysicsDebug()

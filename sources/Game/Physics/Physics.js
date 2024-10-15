@@ -13,7 +13,7 @@ export class Physics
         this.game.time.events.on('tick', () =>
         {
             this.update()
-        })
+        }, 2)
     }
 
     addEntity(_physicalDescription = null, _visual = null)
