@@ -1,11 +1,14 @@
 import * as THREE from 'three/webgpu'
 import { Game } from './Game.js'
+import { Events } from './Events.js'
 
 export class Vehicle
 {
     constructor()
     {
         this.game = new Game()
+        
+        this.events = new Events()
 
         this.setChassis()
 
@@ -17,8 +20,6 @@ export class Vehicle
         this.velocity = new THREE.Vector3()
         this.speed = 0
         this.upsideDownRatio = 0
-        this.stopped = true
-        this.stoppedTime = 0
 
         if(this.game.debug.active)
         {
@@ -30,6 +31,9 @@ export class Vehicle
 
         this.setWheels()
         this.setJump()
+        this.setStop()
+        this.setFlip()
+        this.setStuck()
         this.setReset()
 
         this.game.time.events.on('tick', () =>
@@ -56,7 +60,6 @@ export class Vehicle
                 position: { x: 0, y: 1, z: 0 },
                 colliders: [ { shape: 'cuboid', parameters: [ 1, 0.5, 1.5 ] } ],
                 canSleep: false,
-                // linearDamping: 0.2
             },
             visual
         )
@@ -64,7 +67,37 @@ export class Vehicle
 
     setWheels()
     {
+        // Setup
         this.wheels = {}
+        this.wheels.items = []
+        this.wheels.engineForce = 0
+        this.wheels.engineForceMax = 6
+        this.wheels.engineBoostMultiplier = 2.5
+        this.wheels.steering = 0
+        this.wheels.steeringMax = 0.5
+        this.wheels.visualSteering = 0
+        this.wheels.inContact = 0
+        this.wheels.brakeStrength = 0.21
+        this.wheels.brakePerpetualStrength = 0.04
+
+        // Create wheels
+        for(let i = 0; i < 4; i++)
+        {
+            // Default wheel with random parameters
+            this.controller.addWheel(new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), 1, 1)
+
+            // Visual
+            const visual = new THREE.Mesh(
+                new THREE.CylinderGeometry(1, 1, 0.5, 8),
+                new THREE.MeshNormalMaterial({ flatShading: true })
+            )
+            visual.geometry.rotateZ(Math.PI * 0.5)
+            visual.rotation.reorder('YXZ')
+            this.chassis.visual.add(visual)
+            this.wheels.items.push({ visual, basePosition: new THREE.Vector3() })
+        }
+
+        // Settings
         this.wheels.settings = {
             offset: { x: 0.75, y: -0.4, z: 0.8 }, // No default
             radius: 0.5,                          // No default
@@ -79,32 +112,6 @@ export class Vehicle
             suspensionRestLength: 0.125,          // No default
             suspensionStiffness: 30,              // 5.88
         }
-        this.wheels.items = []
-        this.wheels.engineForce = 0
-        this.wheels.engineForceMax = 6
-        this.wheels.engineBoostMultiplier = 2.5
-        this.wheels.steering = 0
-        this.wheels.steeringMax = 0.5
-        this.wheels.visualSteering = 0
-        this.wheels.inContact = 0
-        this.wheels.brakeStrength = 0.21
-        this.wheels.brakePerpetualStrength = 0.04
-
-        for(let i = 0; i < 4; i++)
-        {
-            // Physical
-            this.controller.addWheel({ x: 0, y: 0, z: 0 }, this.wheels.settings.directionCs, this.wheels.settings.axleCs, this.wheels.settings.suspensionRestLength, this.wheels.settings.radius)
-
-            // Visual
-            const visual = new THREE.Mesh(
-                new THREE.CylinderGeometry(1, 1, 0.5, 8),
-                new THREE.MeshNormalMaterial({ flatShading: true })
-            )
-            visual.geometry.rotateZ(Math.PI * 0.5)
-            visual.rotation.reorder('YXZ')
-            this.chassis.visual.add(visual)
-            this.wheels.items.push({ visual, basePosition: { x: 0, y: 0, z: 0 } })
-        }
 
         this.wheels.updateSettings = () =>
         {
@@ -118,10 +125,10 @@ export class Vehicle
             let i = 0
             for(const wheel of this.wheels.items)
             {
-                wheel.basePosition.x = wheelsPositions[i].x
-                wheel.basePosition.y = wheelsPositions[i].y
-                wheel.basePosition.z = wheelsPositions[i].z
+                wheel.basePosition.copy(wheelsPositions[i])
                 
+                this.controller.setWheelDirectionCs(i, this.wheels.settings.directionCs)
+                this.controller.setWheelAxleCs(i, this.wheels.settings.axleCs)
                 this.controller.setWheelRadius(i, this.wheels.settings.radius)
                 this.controller.setWheelChassisConnectionPointCs(i, wheel.basePosition)
                 this.controller.setWheelFrictionSlip(i, this.wheels.settings.frictionSlip)
@@ -197,7 +204,7 @@ export class Vehicle
                 this.chassis.physical.body.applyImpulse(impulse)
 
                 const torque = this.jump.recoverTorque * this.upsideDownRatio
-                this.chassis.physical.body.applyTorqueImpulse({ x: torque * 0.5, y: 0, z: torque })
+                this.chassis.physical.body.applyTorqueImpulse({ x: torque * 0.6, y: 0, z: torque })
         }
 
         this.game.inputs.events.on('jump', (_down) =>
@@ -218,6 +225,76 @@ export class Vehicle
             panel.addBinding(this.jump, 'turningTorque', { min: 0, max: 10, step: 0.01 })
             panel.addBinding(this.jump, 'recoverTorque', { min: 0, max: 10, step: 0.01 })
         }
+    }
+
+    setStop()
+    {
+        this.stop = {}
+        this.stop.active = true
+        this.stop.time = 0
+        this.stop.lowEdge = 0.04
+        this.stop.highEdge = 0.7
+        
+        this.stop.activate = () =>
+        {
+            this.stop.active = true
+            this.stop.time = this.game.time.elapsed
+            this.events.trigger('stop')
+        }
+        
+        this.stop.deactivate = () =>
+        {
+            this.stop.active = false
+            this.events.trigger('start')
+        }
+    }
+
+    setFlip()
+    {
+        this.flip = {}
+        this.flip.active = false
+        this.flip.edge = 0.3
+        
+        this.flip.activate = () =>
+        {
+            this.flip.active = true
+            this.events.trigger('flip')
+        }
+        
+        this.flip.deactivate = () =>
+        {
+            this.flip.active = false
+            this.events.trigger('unflip')
+        }
+    }
+
+    setStuck()
+    {
+        this.stuck = {}
+        this.stuck.duration = 3
+        this.stuck.timeout = null
+        this.stuck.test = () =>
+        {
+            if(this.flip.active && this.stop.active)
+            {
+                clearTimeout(this.stuck.timeout)
+                this.stuck.timeout = setTimeout(() =>
+                {
+                    if(this.flip.active && this.stop.active)
+                        this.jump.recover()
+                }, 1000)
+            }
+        }
+
+        this.events.on('flip', () =>
+        {
+            this.stuck.test()
+        })
+
+        this.events.on('stop', () =>
+        {
+            this.stuck.test()
+        })
     }
 
     setReset()
@@ -274,6 +351,15 @@ export class Vehicle
 
     updatePostPhysics()
     {
+        // Various measures
+        const newPosition = this.chassis.physical.body.translation()
+        this.positionDelta = this.positionDelta.copy(newPosition).sub(this.position)
+        this.position.copy(newPosition)
+
+        this.up.set(0, 1, 0).applyQuaternion(this.chassis.physical.body.rotation())
+        this.speed = this.positionDelta.length() / this.game.time.delta // Units per seconds
+        this.upsideDownRatio = this.up.dot(new THREE.Vector3(0, - 1, 0)) * 0.5 + 0.5
+
         // Wheels
         this.wheels.visualSteering += (this.wheels.steering - this.wheels.visualSteering) * this.game.time.delta * 16
 
@@ -294,51 +380,28 @@ export class Vehicle
                 this.wheels.inContact++
         }
 
-        // Various measures
-        const newPosition = this.chassis.physical.body.translation()
-        this.positionDelta = this.positionDelta.copy(newPosition).sub(this.position)
-        this.position.copy(newPosition)
-
-        this.up.set(0, 1, 0).applyQuaternion(this.chassis.physical.body.rotation())
-        this.speed = this.positionDelta.length() / this.game.time.delta // Units per seconds
-        this.upsideDownRatio = this.up.dot(new THREE.Vector3(0, - 1, 0)) * 0.5 + 0.5
-
-        // Stopped
-        if(this.speed < 0.05)
+        // Stop
+        if(this.speed < this.stop.lowEdge)
         {
-            if(!this.stopped)
-            {
-                this.stopped = true
-                this.stoppedTime = this.game.time.elapsed
-            }
+            if(!this.stop.active)
+                this.stop.activate()
         }
-        if(this.speed > 0.1)
+        else if(this.speed > this.stop.highEdge)
         {
-            if(this.stopped)
-            {
-                this.stopped = false
-            }
+            if(this.stop.active)
+                this.stop.deactivate()
         }
 
-        // Stuck
-        if(
-            this.stopped &&
-            this.game.time.elapsed - this.stoppedTime > 1 &&
-            this.upsideDownRatio > 0.3
-        )
+        // Flip
+        if(this.upsideDownRatio > this.flip.edge)
         {
-            if(!this.stuck)
-            {
-                this.stuck = true
-                this.jump.recover()
-            }
+            if(!this.flip.active)
+                this.flip.activate()
         }
         else
         {
-            if(this.stuck)
-            {
-                this.stuck = false
-            }
+            if(this.flip.active)
+                this.flip.deactivate()
         }
     }
 }
