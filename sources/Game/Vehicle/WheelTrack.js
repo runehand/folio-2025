@@ -80,18 +80,18 @@ export class WheelTrack
         {
             const endAlpha = uv().x.smoothstep(0.5, 1).oneMinus()
             const contactAlpha = trackData.a
-            const trackSideAlpha = mul(
+            const trackEdgeAlpha = mul(
                 uv().y.remapClamp(0, 0.2, 0, 1),
                 uv().y.remapClamp(0.8, 1, 1, 0)
             )
-            const renderSideAlpha = mul(
+            const renderEdgeAlpha = mul(
                 screenUV.x.remapClamp(0, 0.2, 0, 1),
                 screenUV.x.remapClamp(0.8, 1, 1, 0),
                 screenUV.y.remapClamp(0, 0.2, 0, 1),
                 screenUV.y.remapClamp(0.8, 1, 1, 0),
             )
 
-            const alpha = endAlpha.mul(contactAlpha).mul(trackSideAlpha).mul(renderSideAlpha)
+            const alpha = endAlpha.mul(contactAlpha).mul(trackEdgeAlpha).mul(renderEdgeAlpha)
             return vec4(uv(), 1, alpha)
         })()
         
