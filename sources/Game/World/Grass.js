@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { Game } from '../Game.js'
-import { texture, transformNormalToView, positionViewDirection, uniformArray, varying, vertexIndex, rotateUV, cameraPosition, vec4, cameraProjectionMatrix, cameraViewMatrix, atan2, billboarding, vec3, vec2, modelWorldMatrix, Fn, attribute, positionGeometry } from 'three'
+import { mix, positionWorld, transformedNormalView, matcapUV, modelViewMatrix, positionView, positionLocal, float, mod, texture, transformNormalToView, positionViewDirection, uniformArray, varying, vertexIndex, rotateUV, cameraPosition, vec4, cameraProjectionMatrix, cameraViewMatrix, atan2, billboarding, vec3, vec2, modelWorldMatrix, Fn, attribute, uniform, positionGeometry } from 'three'
+import getWind from '../tsl/getWind.js'
 
 export class Grass
 {
@@ -8,8 +9,8 @@ export class Grass
     {
         this.game = new Game()
 
-        this.details = 300
-        this.size = 40
+        this.details = 600
+        this.size = 80
         this.count = this.details * this.details
         this.fragmentSize = this.size / this.details
         this.bladeWidthRatio = 1.5
@@ -20,11 +21,14 @@ export class Grass
         this.game.resources.load(
             [
                 { path: 'matcaps/grassOnGreen.png', type: 'texture', name: 'matcapGrassOnGreen' },
+                { path: 'noises-128x128.png', type: 'texture', name: 'noisesTexture' },
             ],
             (resources) =>
             {
                 this.resources = resources
                 this.resources.matcapGrassOnGreen.colorSpace = THREE.SRGBColorSpace
+                this.resources.noisesTexture.wrapS = THREE.RepeatWrapping
+                this.resources.noisesTexture.wrapT = THREE.RepeatWrapping
                 this.init()
             }
         )
@@ -35,6 +39,11 @@ export class Grass
         this.setGeometry()
         this.setMaterial()
         this.setMesh()
+
+        this.game.time.events.on('tick', () =>
+        {
+            this.update()
+        })
     }
 
     setGeometry()
@@ -51,8 +60,8 @@ export class Grass
                 const fragmentZ = (iZ / this.details - 0.5) * this.size + this.fragmentSize * 0.5
 
                 const i = (iX * this.details + iZ)
-                const i3 = (iX * this.details + iZ) * 3
-                const i6 = (iX * this.details + iZ) * 6
+                const i3 = i * 3
+                const i6 = i * 6
 
                 // Center of the blade
                 const positionX = fragmentX + (Math.random() - 0.5) * this.fragmentSize * this.positionRandomness
@@ -82,10 +91,13 @@ export class Grass
 
     setMaterial()
     {
-        this.material = new THREE.MeshBasicNodeMaterial()
+        this.material = new THREE.MeshMatcapNodeMaterial()
+        this.playerPosition = uniform(new THREE.Vector2())
 
         const vertexLoopIndex = varying(vertexIndex.toFloat().mod(3))
         const tipness = varying(vertexLoopIndex.step(0.5))
+        const wind = varying(vec2())
+        const bladePosition = varying(vec2())
 
         const bladeWidth = this.fragmentSize * this.bladeWidthRatio
         const bladeHalfWidth = bladeWidth * 0.5
@@ -104,12 +116,19 @@ export class Grass
                 - bladeHalfWidth,
                 0,
         ])
-        this.material.vertexNode = Fn(() =>
+        this.material.positionNode = Fn(() =>
         {
-            // Center
+            // Blade position
             const position = attribute('position')
-            const position3 = vec3(position.x, 0, position.y)
-            const worldCenter = modelWorldMatrix.mul(position3)
+
+            const loopPosition = position.sub(this.playerPosition)
+            const halfSize = float(this.size).mul(0.5).toVar()
+            loopPosition.x.assign(mod(loopPosition.x.add(halfSize), this.size).sub(halfSize))
+            loopPosition.y.assign(mod(loopPosition.y.add(halfSize), this.size).sub(halfSize))
+
+            const position3 = vec3(loopPosition.x, 0, loopPosition.y).add(vec3(this.playerPosition.x, 0, this.playerPosition.y))
+            const worldPosition = modelWorldMatrix.mul(position3).toVar()
+            bladePosition.assign(worldPosition.xz)
 
             // Height
             const height = attribute('randomness').mul(0.4).add(0.6)
@@ -120,37 +139,55 @@ export class Grass
                 shapeUniform.element(vertexLoopIndex.mod(3).mul(2).add(1)).mul(height),
                 0
             )
-            const newPosition = position3.add(shape)
-            const worldPosition = modelWorldMatrix.mul(newPosition)
 
-            const angleToCamera = atan2(worldCenter.z.sub(cameraPosition.z), worldCenter.x.sub(cameraPosition.x)).add(- Math.PI * 0.5)
-            worldPosition.xz.assign(rotateUV(worldPosition.xz, angleToCamera, worldCenter.xz))
+            // Vertex positioning
+            const vertexPosition = position3.add(shape)
 
-            return cameraProjectionMatrix.mul(cameraViewMatrix).mul(worldPosition)
+            // Wind
+            wind.assign(getWind([this.resources.noisesTexture, worldPosition.xz]).mul(tipness).mul(1))
+            vertexPosition.addAssign(vec3(wind.x, 0, wind.y))
+
+            // Vertex rotation
+            const angleToCamera = atan2(worldPosition.z.sub(cameraPosition.z), worldPosition.x.sub(cameraPosition.x)).add(- Math.PI * 0.5)
+            vertexPosition.xz.assign(rotateUV(vertexPosition.xz, angleToCamera, worldPosition.xz))
+
+            return vertexPosition
+        })()
+
+        this.material.normalNode = Fn(() =>
+        {
+            const normal = vec3(wind.y.mul(-10), 1, wind.y.mul(-10)).normalize()
+            return transformNormalToView(normal)
+        })()
+
+        this.material.outputNode = Fn(() =>
+        {
+            const colorVariationUv = texture(this.resources.noisesTexture, bladePosition.mul(0.01))
+
+            const inverseMatcapUV = matcapUV.sub(0.5).mul(-1).add(0.5).toVar()
+            const newMatcapUv = mix(matcapUV, inverseMatcapUV, colorVariationUv.r)
+
+            const matcapColor = texture(this.resources.matcapGrassOnGreen, newMatcapUv)
+            const finalColor = matcapColor.mul(tipness)
+
+            return vec4(finalColor.rgb, 1)
         })()
 
         // this.material.outputNode = Fn(() =>
         // {
-        //     return vec4(vec3(vertexLoopIndex.div(3)), 1)
+        //     const wind = getWind([this.resources.noisesTexture, positionWorld.xz])
+        //     // const finalColor = matcapColor.mul(tipness)
+
+        //     return vec4(wind.xy, 0, 1)
         // })()
 
+        // // const testGeometry = new THREE.PlaneGeometry(20, 20, 1, 1)
+        // const testGeometry = new THREE.SphereGeometry(2, 32, 32)
+        // testGeometry.rotateX(- Math.PI * 0.5)
 
-        this.material.colorNode = Fn(() =>
-        {
-            const x = vec3(positionViewDirection.z, 0, positionViewDirection.x.negate()).normalize()
-            const y = positionViewDirection.cross(x)
-
-            const customTransformedNormalView = transformNormalToView(vec3(0, 1, 0))
-            const customMatcapUv = vec2(x.dot(customTransformedNormalView), y.dot(customTransformedNormalView) ).mul(0.495).add(0.5)
-
-            const matcapColor = texture(this.resources.matcapGrassOnGreen, customMatcapUv)
-
-            const finalColor = matcapColor.mul(tipness)
-
-            // return vec4(matcapColor.rgb, 1)
-            return vec4(finalColor.rgb, 1)
-            // return vec4(vec3(tipness), 1)
-        })()
+        // const testMaterial = new THREE.MeshMatcapNodeMaterial({ depthTest: false, matcap: this.resources.matcapGrassOnGreen })
+        // this.testPlane = new THREE.Mesh(testGeometry, testMaterial)
+        // this.game.scene.add(this.testPlane)
     }
 
     setMesh()
@@ -158,5 +195,12 @@ export class Grass
         this.mesh = new THREE.Mesh(this.geometry, this.material)
         this.mesh.frustumCulled = false
         this.game.scene.add(this.mesh)
+    }
+
+    update()
+    {
+        this.playerPosition.value.set(this.game.vehicle.position.x, this.game.vehicle.position.z)
+        // this.mesh.position.set(this.game.vehicle.position.x, 0, this.game.vehicle.position.z)
+        // this.testPlane.position.set(this.game.vehicle.position.x, 0, this.game.vehicle.position.z)
     }
 }

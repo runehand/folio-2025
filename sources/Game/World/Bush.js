@@ -12,6 +12,7 @@ import { positionViewDirection } from 'three'
 import { sin } from 'three'
 import { positionWorld } from 'three'
 import { time } from 'three'
+import getWind from '../tsl/getWind.js'
 
 export class Bush
 {
@@ -24,6 +25,7 @@ export class Bush
                 { path: 'bush/bushLeaves.png', type: 'texture', name: 'bushLeaves' },
                 { path: 'bush/bush.glb', type: 'gltf', name: 'bushModel' },
                 { path: 'matcaps/bushOnGreen.png', type: 'texture', name: 'matcapBushOnGreen' },
+                { path: 'perlin.png', type: 'texture', name: 'noisesTexture' },
             ],
             (resources) =>
             {
@@ -41,13 +43,15 @@ export class Bush
         const material = new THREE.MeshBasicNodeMaterial({ side: THREE.DoubleSide })
         // const material = new THREE.MeshNormalNodeMaterial({ side: THREE.DoubleSide })
         // const material = new THREE.MeshMatcapNodeMaterial({ side: THREE.DoubleSide, matcap: this.resources.matcapBushOnGreen })
-
+    
         material.positionNode = Fn(() =>
         {
+            // const wind = getWind(this.resources.noisesTexture, positionWorld.xz)
+            const wind = getWind([this.resources.noisesTexture, positionWorld.xz])
             const windX = sin(time)
             const windZ = sin(time.mul(1.2))
-            const multiplier = positionWorld.y.mul(0.05).mul(sin(time.mul(1.5)).add(1).mul(0.5))
-            const windPosition = positionLocal.add(vec3(windX, 0, windZ).mul(multiplier))
+            const multiplier = positionWorld.y.mul(0.05)
+            const windPosition = positionLocal.add(vec3(wind.x, 0, wind.y).mul(multiplier))
             return windPosition
         })()
 

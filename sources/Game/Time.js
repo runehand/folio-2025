@@ -17,6 +17,7 @@ export class Time
         this.events = new Events()
         this.setTick()
 
+        console.log(this.game.debug)
         if(this.game.debug.active)
         {
             this.debugPanel = this.game.debug.panel.addFolder({

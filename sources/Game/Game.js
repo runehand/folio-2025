@@ -25,6 +25,7 @@ export class Game
         // Rapier init
         RAPIER.init().then(() =>
         {
+            console.log('init')
             this.init()
         })
     }
@@ -35,7 +36,7 @@ export class Game
         this.domElement = document.querySelector('.game')
 
         this.scene = new THREE.Scene()
-        this.scene.fogNode = rangeFog(color(0x1b191f), 20, 100)
+        // this.scene.fogNode = rangeFog(color(0x1b191f), 20, 100)
 
         this.debug = new Debug()
         this.inputs = new Inputs([
