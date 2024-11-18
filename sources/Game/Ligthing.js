@@ -12,29 +12,23 @@ export class Lighting
         this.count = 2
         this.lights = []
         this.mapSizeMin = 128
+        this.shadowAmplitude = 20
+        this.near = 1
+        this.depth = 100
 
         for(let i = 0; i < this.count; i++)
         {
-            const directionalLight = new THREE.DirectionalLight(0xffffff, 1)
-            directionalLight.position.setFromSpherical(this.spherical)
-            directionalLight.castShadow = true
+            const light = new THREE.DirectionalLight(0xffffff, 1)
+            light.position.setFromSpherical(this.spherical)
+            light.castShadow = true
             
-            const shadowAmplitude = 20
-            directionalLight.shadow.camera.top = shadowAmplitude
-            directionalLight.shadow.camera.right = shadowAmplitude
-            directionalLight.shadow.camera.bottom = - shadowAmplitude
-            directionalLight.shadow.camera.left = - shadowAmplitude
-            directionalLight.shadow.camera.near = 1
-            directionalLight.shadow.camera.far = 100
+            this.game.scene.add(light)
+            this.game.scene.add(light.target)
 
-            const mapSize = this.mapSizeMin * Math.pow(2, i)
-            directionalLight.shadow.mapSize.set(mapSize, mapSize)
-            
-            this.game.scene.add(directionalLight)
-            this.game.scene.add(directionalLight.target)
-
-            this.lights.push(directionalLight)
+            this.lights.push(light)
         }
+
+        this.updateLights()
 
         this.game.time.events.on('tick', () =>
         {
@@ -51,6 +45,40 @@ export class Lighting
 
             debugPanel.addBinding(this.spherical, 'phi', { min: 0, max: Math.PI * 0.5 })
             debugPanel.addBinding(this.spherical, 'theta', { min: - Math.PI, max: Math.PI })
+            debugPanel.addBinding(this.spherical, 'radius', { min: 0, max: 100 })
+            debugPanel.addBlade({ view: 'separator' })
+            debugPanel.addBinding(this, 'near', { min: 0.1, max: 50, step: 0.1 }).on('change', () => this.updateLights())
+            debugPanel.addBinding(this, 'depth', { min: 0.1, max: 100, step: 0.1 }).on('change', () => this.updateLights())
+            debugPanel.addBinding(this, 'shadowAmplitude', { min: 1, max: 50 }).on('change', () => this.updateLights())
+
+            const mapSizes = {}
+            for(let i = 0; i < 12; i++)
+            {
+                const size = Math.pow(2, i + 1)
+                mapSizes[size] = size
+            }
+            debugPanel.addBinding(this, 'mapSizeMin', { options: mapSizes }).on('change', () => this.updateLights())
+        }
+    }
+
+    updateLights()
+    {
+        let i = 0
+        for(const light of this.lights)
+        {
+            light.shadow.camera.top = this.shadowAmplitude
+            light.shadow.camera.right = this.shadowAmplitude
+            light.shadow.camera.bottom = - this.shadowAmplitude
+            light.shadow.camera.left = - this.shadowAmplitude
+            light.shadow.camera.near = this.near
+            light.shadow.camera.far = this.near + this.depth
+
+            light.shadow.camera.updateProjectionMatrix()
+
+            const mapSize = this.mapSizeMin * Math.pow(2, i)
+            light.shadow.mapSize.set(mapSize, mapSize)
+
+            i++
         }
     }
 

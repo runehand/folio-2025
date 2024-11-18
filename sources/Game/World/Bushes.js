@@ -54,7 +54,6 @@ export class Bushes
             )
             const position = new THREE.Vector3().setFromSpherical(spherical)
 
-            // plane.rotateX(Math.random() * 9999)
             plane.rotateZ(Math.random() * 9999)
             plane.rotateY(0)
             plane.translate(
@@ -95,8 +94,6 @@ export class Bushes
 
     setMaterial()
     {
-        // this.material = new THREE.MeshBasicNodeMaterial({ side: THREE.DoubleSide })
-        // this.material = new THREE.MeshNormalNodeMaterial({ side: THREE.DoubleSide })
         this.material = new THREE.MeshMatcapNodeMaterial({
             // side: THREE.DoubleSide,
             matcap: this.resources.matcapBushOnGreen,
@@ -133,7 +130,6 @@ export class Bushes
         this.mesh.castShadow = true
         this.mesh.count = this.items.length
         this.mesh.frustumCulled = false
-        // this.mesh.instanceMatrix.setUsage(THREE.StaticDrawUsage)
         this.game.scene.add(this.mesh)
 
         this.instanceMatrix = new THREE.InstancedBufferAttribute(new Float32Array(this.mesh.count * 16), 16)
@@ -142,14 +138,8 @@ export class Bushes
         let i = 0
         for(const _item of this.items)
         {
-            // this.mesh.setMatrixAt(i, _item)
             _item.toArray(this.instanceMatrix.array, i * 16)
             i++
         }
-
-        // this.game.time.events.on('tick', () =>
-        // {
-        //     this.mesh.rotation.y = this.game.time.elapsed
-        // })
     }
 }
