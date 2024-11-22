@@ -95,8 +95,12 @@ export class Vehicle
             {
                 type: 'dynamic',
                 position: { x: 0, y: 5, z: 0 },
-                // rotation: new THREE.Quaternion().setFromAxisAngle(new THREE.Euler(1, 0, 0.2), Math.PI * 0.5),
-                colliders: [ { shape: 'cuboid', parameters: [ 1.5, 0.5, 0.85 ] } ],
+                friction: 0.4,
+                // rotation: new THREE.Quaternion().setFromAxisAngle(new THREE.Euler(0, 0, 1), Math.PI * 0.5),
+                colliders: [
+                    { shape: 'cuboid', parameters: [ 1.5, 0.3, 0.85 ], position: { x: 0, y: - 0.07, z: 0 } },
+                    { shape: 'cuboid', parameters: [ 0.5, 0.15, 0.65 ], position: { x: 0, y: 0.4, z: 0 } },
+                ],
                 canSleep: false,
             },
             this.parts.chassis
@@ -162,7 +166,7 @@ export class Vehicle
             maxSuspensionForce: 100,
             maxSuspensionTravel: 2,
             sideFrictionStiffness: 0.6,
-            suspensionCompression: 2,
+            suspensionCompression: 10,
             suspensionRelaxation: 1.88,
             suspensionStiffness: 30,
         }
@@ -274,9 +278,9 @@ export class Vehicle
     setUnstuck()
     {
         this.unstuck = {}
-        this.unstuck.duration = 3
+        this.unstuck.duration = 0.5
         this.unstuck.timeout = null
-        this.unstuck.force = 8
+        this.unstuck.force = 6
 
         this.unstuck.test = () =>
         {
@@ -287,7 +291,7 @@ export class Vehicle
                 {
                     if(this.flip.active && this.stop.active)
                         this.unstuck.activate()
-                }, 1000)
+                }, this.unstuck.duration * 1000)
             }
         }
 

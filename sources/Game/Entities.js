@@ -29,15 +29,23 @@ export class Entities
         return entity
     }
 
-    addFromModels(_physical, _visual)
+    addFromModels(_physicalModel, _visualModel, _physicalDescription = {})
     {
         const colliders = []
 
         // Visual
-        this.game.materials.updateObject(_visual)
+        _visualModel.traverse((_child) =>
+        {
+            if(_child.isMesh)
+            {
+                _child.castShadow = true
+                _child.receiveShadow = true
+            }
+        })
+        this.game.materials.updateObject(_visualModel)
 
         // Colliders
-        for(const physical of _physical.children)
+        for(const physical of _physicalModel.children)
         {
             colliders.push({
                 shape: 'trimesh',
@@ -50,11 +58,10 @@ export class Entities
         // Add
         this.add(
             {
-                type: 'fixed',
-                position: { x: 0, y: 0, z: 0 },
+                ..._physicalDescription,
                 colliders: colliders
             },
-            _visual
+            _visualModel
         )
     }
 

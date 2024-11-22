@@ -66,8 +66,15 @@ export class Physics
 
             if(_colliderDescription.position)
                 colliderDescription = colliderDescription.setTranslation(_colliderDescription.position.x, _colliderDescription.position.y, _colliderDescription.position.z)
+
             if(_colliderDescription.quaternion)
                 colliderDescription = colliderDescription.setRotation(_colliderDescription.quaternion)
+
+            if(typeof _physicalDescription.friction !== 'undefined')
+                colliderDescription = colliderDescription.setFriction(_physicalDescription.friction)
+                
+            if(typeof _physicalDescription.restitution !== 'undefined')
+                colliderDescription = colliderDescription.setRestitution(_physicalDescription.restitution)
 
             const collider = this.world.createCollider(colliderDescription, physical.body)
             physical.colliders.push(collider)
