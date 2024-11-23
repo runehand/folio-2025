@@ -52,7 +52,7 @@ export class View
         this.game.time.events.on('tick', () =>
         {
             this.update()
-        }, 3)
+        }, 4)
 
         this.game.viewport.events.on('change', () =>
         {

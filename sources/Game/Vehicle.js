@@ -45,7 +45,7 @@ export class Vehicle
         this.game.time.events.on('tick', () =>
         {
             this.updatePostPhysics()
-        }, 4)
+        }, 5)
     }
 
     setParts()

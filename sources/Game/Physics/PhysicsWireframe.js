@@ -6,7 +6,7 @@ export class PhysicsWireframe
     constructor()
     {
         this.game = new Game()
-        this.active = true
+        this.active = false
 
         this.geometry = new THREE.BufferGeometry()
         this.geometry.setAttribute('position', new THREE.Float32BufferAttribute([], 3))
@@ -22,7 +22,7 @@ export class PhysicsWireframe
         this.game.time.events.on('tick', () =>
         {
             this.update()
-        }, 3)
+        }, 6)
 
         if(this.game.debug.active)
         {

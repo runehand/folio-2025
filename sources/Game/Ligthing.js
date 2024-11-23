@@ -39,7 +39,7 @@ export class Lighting
         this.game.time.events.on('tick', () =>
         {
             this.update()
-        })
+        }, 7)
 
         // Debug
         if(this.game.debug.active)

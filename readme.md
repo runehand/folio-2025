@@ -23,9 +23,12 @@ npm run build
 | 1 | Vehicle (pre Physics) |
 | 2 | Physics |
 | 3 | Entities |
-| 3 | View |
-| 4 | Vehicle (post Physics) |
-| 4 | PhysicsWireframe |
-| 5 | GroundData |
-| 6 | Grass |
-| 7 | Rendering |
+| 4 | View |
+| 5 | Vehicle (post Physics) |
+| 6 | PhysicsWireframe |
+| 7 | Lighting |
+| 8 | GroundData |
+| 9 | Grass |
+| 10 | BlackFriday |
+| 11 | Rendering |
+| 999 | Monitoring |

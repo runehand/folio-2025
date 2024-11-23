@@ -21,7 +21,7 @@ export class Grass
         this.game.time.events.on('tick', () =>
         {
             this.update()
-        }, 6)
+        }, 9)
     }
 
     setGeometry()

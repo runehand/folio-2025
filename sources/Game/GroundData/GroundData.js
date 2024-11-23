@@ -39,7 +39,7 @@ export class GroundData
         this.game.time.events.on('tick', () =>
         {
             this.update()
-        }, 5)
+        }, 8)
     }
 
     setDebugPlane()

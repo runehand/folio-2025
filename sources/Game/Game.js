@@ -16,6 +16,7 @@ import { Monitoring } from './Monitoring.js'
 import { Lighting } from './Ligthing.js'
 import { Materials } from './Materials.js'
 import { Entities } from './Entities.js'
+import { BlackFriday } from './BlackFriday.js'
 
 export class Game
 {
@@ -81,6 +82,7 @@ export class Game
             { name: 'hydraulicsFrontRight', keys: [ 'Numpad9' ] },
             { name: 'hydraulicsBackRight', keys: [ 'Numpad3' ] },
             { name: 'hydraulicsBackLeft', keys: [ 'Numpad1' ] },
+            { name: 'close', keys: [ 'Escape' ] },
         ])
         this.viewport = new Viewport(this.domElement)
         this.lighting = new Lighting()
@@ -91,6 +93,7 @@ export class Game
         this.view = new View()
         this.vehicle = new Vehicle()
         this.world = new World()
+        this.blackFriday = new BlackFriday()
         this.rendering = new Rendering()
         // this.monitoring = new Monitoring()
 
