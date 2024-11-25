@@ -285,3 +285,14 @@ html, body, .game
     background: #ffffff;
     color: #000000;
 }
+
+.black-friday .logos
+{
+    max-width: calc(100vw - 20px);
+    height: auto;
+}
+
+.black-friday .no-mobile-container
+{
+    display: none;
+}
