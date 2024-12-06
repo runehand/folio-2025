@@ -14,12 +14,12 @@ export class World
         this.game = new Game()
 
         this.floor = new Floor()
-        this.grass = new Grass()
+        // this.grass = new Grass()
         this.bushes = new Bushes()
-        this.playground = new Playground()
-        this.bricksWalls = new BricksWalls()
+        // this.playground = new Playground()
+        // this.bricksWalls = new BricksWalls()
         // this.setTestCube()
-        // this.setTestShadow()
+        this.setTestShadow()
         // this.setAxesHelper()
     }
 
