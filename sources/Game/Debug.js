@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { Pane } from 'tweakpane'
+import * as EssentialsPlugin from '@tweakpane/plugin-essentials'
 import { Game } from './Game.js'
 
 export class Debug
@@ -11,7 +12,10 @@ export class Debug
         this.active = location.hash.indexOf('debug') !== -1
 
         if(this.active)
+        {
             this.panel = new Pane()
+            this.panel.registerPlugin(EssentialsPlugin)
+        }
     }
 
     addThreeColorBinding(panel, object, label)

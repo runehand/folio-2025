@@ -11,6 +11,7 @@
   "description": "",
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.14.0",
+    "@tweakpane/plugin-essentials": "^0.2.1",
     "camera-controls": "^2.9.0",
     "gsap": "^3.12.5",
     "howler": "^2.2.4",

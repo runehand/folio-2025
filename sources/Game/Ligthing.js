@@ -68,7 +68,6 @@ export class Lighting
                 const size = Math.pow(2, i + 1)
                 mapSizes[size] = size
             }
-            // this.debugPanel.addBinding(this, 'mapSizeMin', { options: mapSizes }).on('change', () => this.updateShadow())
         }
     }
 

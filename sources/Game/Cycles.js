@@ -33,7 +33,7 @@ export class Cycles
     {
         this.day = {}
         this.day.progress = 0
-        this.day.speed = 0.01
+        this.day.speed = 0.001
         this.day.auto = true
 
         const presets = {

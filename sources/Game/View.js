@@ -15,7 +15,7 @@ export class View
     {
         this.game = Game.getInstance()
         
-        this.mode = View.FREE_MODE
+        this.mode = View.DEFAULT_MODE
         this.position = new THREE.Vector3()
 
         if(this.game.debug.active)
