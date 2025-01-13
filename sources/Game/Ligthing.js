@@ -8,7 +8,7 @@ export class Lighting
     {
         this.game = Game.getInstance()
 
-        this.useCycles = true
+        this.useDayCycles = true
         this.phi = 0.73
         this.theta = 0.72
         this.phiAmplitude = 0.82
@@ -49,7 +49,7 @@ export class Lighting
         if(this.game.debug.active)
         {
             this.debugPanel.addBinding(this.helper, 'visible', { label: 'helperVisible' })
-            this.debugPanel.addBinding(this, 'useCycles')
+            this.debugPanel.addBinding(this, 'useDayCycles')
             this.debugPanel.addBinding(this, 'phi', { min: 0, max: Math.PI * 0.5 }).on('change', () => this.updateCoordinates())
             this.debugPanel.addBinding(this, 'theta', { min: - Math.PI, max: Math.PI }).on('change', () => this.updateCoordinates())
             this.debugPanel.addBinding(this, 'phiAmplitude', { min: 0, max: Math.PI}).on('change', () => this.updateCoordinates())
@@ -78,7 +78,7 @@ export class Lighting
         this.lightBounceDistance = uniform(float(1.5))
         this.lightBounceMultiplier = uniform(float(1))
 
-        this.shadowColor = uniform(this.game.cycles.day.values.properties.shadowColor.value)
+        this.shadowColor = uniform(this.game.dayCycles.values.properties.shadowColor.value)
         this.coreShadowEdgeLow = uniform(float(-0.25))
         this.coreShadowEdgeHigh = uniform(float(1))
 
@@ -254,10 +254,10 @@ export class Lighting
 
     update()
     {
-        if(this.useCycles)
+        if(this.useDayCycles)
         {
-            this.spherical.theta = this.theta + Math.sin(- (this.game.cycles.day.progress + 9/16) * Math.PI * 2) * this.thetaAmplitude
-            this.spherical.phi = this.phi + (Math.cos(- (this.game.cycles.day.progress + 9/16) * Math.PI * 2) * 0.5) * this.phiAmplitude
+            this.spherical.theta = this.theta + Math.sin(- (this.game.dayCycles.progress + 9/16) * Math.PI * 2) * this.thetaAmplitude
+            this.spherical.phi = this.phi + (Math.cos(- (this.game.dayCycles.progress + 9/16) * Math.PI * 2) * 0.5) * this.phiAmplitude
         }
         else
         {
@@ -277,7 +277,7 @@ export class Lighting
         this.helper.lookAt(this.game.view.focusPoint.position)
 
         // Apply day cycles values
-        this.colorUniform.value.copy(this.game.cycles.day.values.properties.lightColor.value)
-        this.intensityUniform.value = this.game.cycles.day.values.properties.lightIntensity.value
+        this.colorUniform.value.copy(this.game.dayCycles.values.properties.lightColor.value)
+        this.intensityUniform.value = this.game.dayCycles.values.properties.lightIntensity.value
     }
 }

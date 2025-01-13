@@ -1,25 +1,28 @@
 import * as THREE from 'three'
 import { Game } from './Game.js'
 import { lerp, remap, smoothstep } from './utilities/maths.js'
+import { Events } from './Events.js'
 
-export class Cycles
+export class DayCycles
 {
     constructor()
     {
         this.game = Game.getInstance()
 
         this.interpolateds = []
+        this.punctualEvents = []
+        this.intervalEvents = []
+        this.events = new Events()
 
         // Debug
         if(this.game.debug.active)
         {
             this.debugPanel = this.game.debug.panel.addFolder({
-                title: '♻️ Cicles',
+                title: '♻️ Day Cicles',
                 expanded: false,
             })
-            this.debugsToRefresh = []
+            this.tweaksToRefresh = []
         }
-
 
         this.setDay()
 
@@ -31,10 +34,11 @@ export class Cycles
 
     setDay()
     {
-        this.day = {}
-        this.day.progress = 0
-        this.day.speed = 0.001
-        this.day.auto = true
+        this.progress = 0
+        this.manualProgress = this.progress
+        this.manualProgressChanged = true
+        this.speed = 0.01
+        this.auto = true
 
         const presets = {
             day: { lightColor: new THREE.Color('#ffffff'), lightIntensity: 1.2, shadowColor: new THREE.Color('#0085db'), fogColorA: new THREE.Color('#b4ffff'), fogColorB: new THREE.Color('#ffdf89'), fogNearRatio: 0.315, fogFarRatio: 1.25 },
@@ -43,7 +47,7 @@ export class Cycles
             dawn: { lightColor: new THREE.Color('#ff9000'), lightIntensity: 1.2, shadowColor: new THREE.Color('#db4700'), fogColorA: new THREE.Color('#ee85ff'), fogColorB: new THREE.Color('#ff3939'), fogNearRatio: 0, fogFarRatio: 1 },
         }
 
-        this.day.values = this.createKeyframes(
+        this.values = this.createKeyframes(
             [
                 { properties: presets.day, stop: 0.0 }, // day
                 { properties: presets.day, stop: 0.15 }, // day
@@ -53,7 +57,7 @@ export class Cycles
                 { properties: presets.dawn, stop: 0.8 }, // Dawn
                 { properties: presets.day, stop: 0.9 }, // day
             ],
-            this.day,
+            this,
             'smoothstep'
         )
 
@@ -64,9 +68,12 @@ export class Cycles
                 title: 'Day',
                 expanded: true,
             })
-            this.debugsToRefresh.push(debugPanel.addBinding(this.day, 'progress', { min: 0, max: 1, step: 0.001 }))
-            debugPanel.addBinding(this.day, 'speed', { min: 0, max: 1, step: 0.001 })
-            debugPanel.addBinding(this.day, 'auto')
+            const tweak = debugPanel
+                .addBinding(this, 'manualProgress', { min: 0, max: 1, step: 0.001 })
+                .on('change', () => { this.manualProgressChanged = true })
+            this.tweaksToRefresh.push(tweak)
+            debugPanel.addBinding(this, 'speed', { min: 0, max: 1, step: 0.001 })
+            debugPanel.addBinding(this, 'auto')
 
             const progresses = {
                 day: 0,
@@ -89,7 +96,7 @@ export class Cycles
                 })
                 .on('click', (event) =>
                 {
-                    this.day.progress = progresses[event.cell.title]
+                    this.progress = progresses[event.cell.title]
                 })
 
             for(const presetKey in presets)
@@ -166,8 +173,45 @@ export class Cycles
 
     update()
     {
-        if(this.day.auto)
-            this.day.progress = (this.day.progress + this.game.time.deltaScaled * this.day.speed) % 1
+        // New progress
+        let newProgress = this.progress
+        if(this.auto)
+            newProgress += this.game.time.deltaScaled * this.speed
+
+        if(this.manualProgressChanged)
+        {
+            this.manualProgressChanged = false
+            newProgress = this.manualProgress
+        }
+
+        // Test punctual events
+        for(const punctualEvent of this.punctualEvents)
+        {
+            if(newProgress >= punctualEvent.progress && this.progress < punctualEvent.progress)
+            {
+                this.events.trigger(punctualEvent.name)
+            }
+        }
+
+        // Test interval events
+        for(const intervalEvent of this.intervalEvents)
+        {
+            const inInterval = newProgress > intervalEvent.startProgress && newProgress < intervalEvent.endProgress
+
+            if(inInterval && !intervalEvent.inInverval)
+            {
+                intervalEvent.inInverval = true
+                this.events.trigger(intervalEvent.name, [ intervalEvent.inInverval ])
+            }
+            if(!inInterval && intervalEvent.inInverval)
+            {
+                intervalEvent.inInverval = false
+                this.events.trigger(intervalEvent.name, [ intervalEvent.inInverval ])
+            }
+        }
+
+        // Progress
+        this.progress = newProgress % 1
 
         for(const interpolated of this.interpolateds)
         {
@@ -214,10 +258,20 @@ export class Cycles
 
         if(this.game.debug.active)
         {
-            for(const binding of this.debugsToRefresh)
+            for(const binding of this.tweaksToRefresh)
             {
                 binding.refresh()
             }
         }
+    }
+
+    addPunctualEvent(name, progress)
+    {
+        this.punctualEvents.push({ name, progress })
+    }
+
+    addIntervalEvent(name, startProgress, endProgress)
+    {
+        this.intervalEvents.push({ name, startProgress, endProgress, inInverval: false })
     }
 }

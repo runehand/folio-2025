@@ -204,8 +204,8 @@ export class Flowers
 
     update()
     {
-        const intensityStart = smoothstep(this.game.cycles.day.progress, 0.25, 0.4)
-        const intensityEnd = smoothstep(this.game.cycles.day.progress, 0.75, 0.6)
+        const intensityStart = smoothstep(this.game.dayCycles.progress, 0.25, 0.4)
+        const intensityEnd = smoothstep(this.game.dayCycles.progress, 0.75, 0.6)
 
         this.colors.emissiveIntensity.value = Math.min(intensityStart, intensityEnd)
     }

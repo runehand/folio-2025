@@ -17,7 +17,7 @@ import { Lighting } from './Ligthing.js'
 import { Materials } from './Materials.js'
 import { Entities } from './Entities.js'
 import { Fog } from './Fog.js'
-import { Cycles } from './Cycles.js'
+import { DayCycles } from './DayCycles.js'
 import { Noises } from './Noises.js'
 import { Wind } from './Wind.js'
 import { TerrainData } from './TerrainData.js'
@@ -36,10 +36,14 @@ export class Game
             return Game.instance
 
         Game.instance = this
+        console.log('init')
 
         // Rapier init
         RAPIER.init().then(() =>
         {
+            console.log('initiated')
+            console.log(RAPIER)
+
             // Load resources
             this.resourcesLoader = new ResourcesLoader()
             this.resourcesLoader.load(
@@ -63,6 +67,7 @@ export class Game
                     { path: 'cherryTrees/cherryTreesVisual.glb', type: 'gltf', name: 'cherryTreesVisualModel' },
                     { path: 'cherryTrees/cherryTreesReferences.glb', type: 'gltf', name: 'cherryTreesReferencesModel' },
                     { path: 'scenery/sceneryStaticVisual.glb', type: 'gltf', name: 'sceneryStaticVisualModel' },
+                    { path: 'poleLights/poleLights.glb', type: 'gltf', name: 'poleLightsModel' },
                     
                     // { path: 'christmas/christmasTreeVisual.glb', type: 'gltf', name: 'christmasTreeVisualModel' },
                     // { path: 'christmas/christmasTreePhysical.glb', type: 'gltf', name: 'christmasTreePhysicalModel' },
@@ -115,7 +120,7 @@ export class Game
         this.rendering = new Rendering()
         this.noises = new Noises()
         // this.sounds = new Sounds()
-        this.cycles = new Cycles()
+        this.dayCycles = new DayCycles()
         this.wind = new Wind()
         this.terrainData = new TerrainData()
         this.lighting = new Lighting()

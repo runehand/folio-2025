@@ -59,6 +59,8 @@ export class Materials
             debugPanel.addBinding(dummy, 'intensity', { min: 0, max: 10, step: 0.01 }).on('change', update)
             debugPanel.addBinding(dummy, 'color', { view: 'color' }).on('change', update)
         }
+
+        return material
     }
 
     createGradient(_name = 'material', _colorA = 'red', _colorB = 'blue', debugPanel = null)
@@ -78,6 +80,8 @@ export class Materials
             this.game.debug.addThreeColorBinding(debugPanel, colorA.value, 'colorA')
             this.game.debug.addThreeColorBinding(debugPanel, colorB.value, 'colorB')
         }
+
+        return material
     }
 
     setPreviews()

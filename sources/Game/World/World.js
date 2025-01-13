@@ -14,6 +14,7 @@ import Bushes from './Bushes.js'
 import { WaterSurface } from './WaterSurface.js'
 import { Scenery } from './Scenery.js'
 import { WindLines } from './WindLines.js'
+import { PoleLights } from './PoleLights.js'
 
 export class World
 {
@@ -32,6 +33,7 @@ export class World
         this.flowers = new Flowers()
         this.bricks = new Bricks()
         this.windLines = new WindLines()
+        this.poleLights = new PoleLights()
         // this.playground = new Playground()
         // this.christmas = new Christmas()
 
