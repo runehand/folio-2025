@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu'
 import { Game } from './Game.js'
-import { uniform, color, float, Fn, vec4, positionWorld, normalWorld, vec3, mix, max } from 'three/tsl'
+import { uniform, color, float, Fn, vec4, positionWorld, vec3, mix, max } from 'three/tsl'
 
 export class Lighting
 {
@@ -100,7 +100,7 @@ export class Lighting
         }
 
         // Light output
-        this.lightOutputNodeBuilder = (inputColor, totalShadows, withBounce = true, withWater = true) =>
+        this.lightOutputNodeBuilder = (inputColor, normal, totalShadows, withBounce = true, withWater = true) =>
         {
             return Fn(([inputColor, totalShadows]) =>
             {
@@ -112,7 +112,7 @@ export class Lighting
                     const terrainData = this.game.terrainData.terrainDataNode(positionWorld.xz)
 
                     // Bounce color
-                    const bounceOrientation = normalWorld.dot(vec3(0, - 1, 0)).smoothstep(this.lightBounceEdgeLow, this.lightBounceEdgeHigh)
+                    const bounceOrientation = normal.dot(vec3(0, - 1, 0)).smoothstep(this.lightBounceEdgeLow, this.lightBounceEdgeHigh)
                     const bounceDistance = this.lightBounceDistance.sub(max(0, positionWorld.y)).div(this.lightBounceDistance).max(0).pow(2)
                     // const bounceWater = positionWorld.y.step(-0.3).mul(0.9).add(1)
                     const bounceColor = this.game.terrainData.colorNode(terrainData)
@@ -130,7 +130,7 @@ export class Lighting
                 const lightenColor = baseColor.mul(this.game.lighting.colorUniform.mul(this.game.lighting.intensityUniform))
 
                 // Core shadow
-                const coreShadowMix = normalWorld.dot(this.game.lighting.directionUniform).smoothstep(this.coreShadowEdgeHigh, this.coreShadowEdgeLow)
+                const coreShadowMix = normal.dot(this.game.lighting.directionUniform).smoothstep(this.coreShadowEdgeHigh, this.coreShadowEdgeLow)
                 
                 // Cast shadow
                 const castShadowMix = totalShadows.oneMinus()

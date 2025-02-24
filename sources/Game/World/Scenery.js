@@ -25,7 +25,7 @@ export class Scenery
 
     setStoneMaterial()
     {
-        const test = new THREE.MeshLambertNodeMaterial()
+        const test = new THREE.MeshBasicNodeMaterial()
         test.shadowSide = THREE.BackSide
 
         const stoneColor = uniform(color('#ffe9d7'))
@@ -36,7 +36,7 @@ export class Scenery
             const upDot = dot(vec3(0.2, 1, 0.4).normalize(), normalGeometry).toVar()
 
             const baseColor = mix(stoneColor, mossColor, max(0, upDot))
-            return this.game.lighting.lightOutputNodeBuilder(baseColor, this.game.lighting.addTotalShadowToMaterial(test))
+            return this.game.lighting.lightOutputNodeBuilder(baseColor, normalWorld, this.game.lighting.addTotalShadowToMaterial(test))
         })()
         this.game.materials.save('stoneWhite', test)
 

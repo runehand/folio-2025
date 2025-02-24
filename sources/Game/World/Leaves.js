@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu'
 import { Game } from '../Game.js'
-import { float, Fn, hash, instancedArray, instanceIndex, materialNormal, max, mod, modelViewMatrix, positionGeometry, rotateUV, sin, smoothstep, step, storage, texture, uniform, vec2, vec3, vec4 } from 'three/tsl'
+import { float, Fn, hash, instancedArray, instanceIndex, materialNormal, max, mod, modelViewMatrix, normalWorld, positionGeometry, rotateUV, sin, smoothstep, step, storage, texture, uniform, vec2, vec3, vec4 } from 'three/tsl'
 import { remap } from '../utilities/maths.js'
 
 export class Leaves
@@ -115,7 +115,7 @@ export class Leaves
         const normalBuffer = storage(new THREE.StorageInstancedBufferAttribute(normalArray, 3), 'vec3', this.count).toAttribute()
 
         // Output color
-        this.material.outputNode = this.game.lighting.lightOutputNodeBuilder(colorBuffer, this.game.lighting.addTotalShadowToMaterial(this.material))
+        this.material.outputNode = this.game.lighting.lightOutputNodeBuilder(colorBuffer, normalWorld, this.game.lighting.addTotalShadowToMaterial(this.material))
 
         // Position
         this.material.positionNode = Fn(() =>

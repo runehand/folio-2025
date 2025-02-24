@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu'
 import { Game } from '../Game.js'
-import { attribute, color, float, Fn, instance, instancedBufferAttribute, instanceIndex, luminance, mix, positionLocal, texture, uniform, uniformArray, uv, vec3, vec4 } from 'three/tsl'
+import { attribute, color, float, Fn, instance, instancedBufferAttribute, instanceIndex, luminance, mix, normalWorld, positionLocal, texture, uniform, uniformArray, uv, vec3, vec4 } from 'three/tsl'
 import { remap, smoothstep } from '../utilities/maths.js'
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js'
 
@@ -208,7 +208,7 @@ export class Flowers
                 this.colors.uniform.element(colorIndex.mul(3).add(2))
             )
 
-            const lightOutputColor = this.game.lighting.lightOutputNodeBuilder(baseColor, totalShadows, true, false)
+            const lightOutputColor = this.game.lighting.lightOutputNodeBuilder(baseColor, normalWorld, totalShadows, true, false)
 
             const baseLuminance = luminance(baseColor)
             const emissiveMultiplier = attribute('emissiveMultiplier')

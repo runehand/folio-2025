@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu'
 import { Game } from './Game.js'
-import { attribute, cross, dot, float, Fn, mat3, materialNormal, modelViewMatrix, normalGeometry, normalView, positionGeometry, texture, uniform, vec2, vec3, vec4 } from 'three/tsl'
+import { attribute, cross, dot, float, Fn, mat3, modelViewMatrix, positionGeometry, texture, uniform, vec2, vec3, vec4 } from 'three/tsl'
 
 const getRotationMatrix = Fn(([u, v]) =>
 {
@@ -31,7 +31,7 @@ export class Trails
         {
             this.debugPanel = this.game.debug.panel.addFolder({
                 title: '🌈 Trails',
-                expanded: true,
+                expanded: false,
             })
         }
         

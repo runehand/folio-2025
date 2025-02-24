@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu'
 import { Game } from '../Game.js'
-import { attribute, cameraNormalMatrix, cameraPosition, cameraProjectionMatrix, cameraViewMatrix, color, cross, float, floor, Fn, If, modelNormalMatrix, modelViewMatrix, modelWorldMatrix, mul, normalLocal, normalWorld, positionGeometry, positionLocal, positionWorld, uniform, vec2, vec3, vec4, vertexIndex, viewport } from 'three/tsl'
+import { attribute, cameraNormalMatrix, cameraPosition, cameraProjectionMatrix, cameraViewMatrix, color, cross, float, floor, Fn, If, modelNormalMatrix, modelViewMatrix, modelWorldMatrix, mul, positionGeometry, positionLocal, positionWorld, uniform, vec2, vec3, vec4, vertexIndex, viewport } from 'three/tsl'
 import gsap from 'gsap'
 import { WindLineGeometry } from '../Geometries/WindLineGeometry.js'
 import { remapClamp } from '../utilities/maths.js'
@@ -45,7 +45,7 @@ class WindLine
             return cameraProjectionMatrix.mul(viewPosition)
         })()
 
-        material.outputNode = this.game.lighting.lightOutputNodeBuilder(color('#ffffff'), this.game.lighting.addTotalShadowToMaterial(material))
+        material.outputNode = this.game.lighting.lightOutputNodeBuilder(color('#ffffff'), vec3(0, 1, 0), this.game.lighting.addTotalShadowToMaterial(material))
 
         this.mesh = new THREE.Mesh(geometry, material)
         this.mesh.position.y = 2

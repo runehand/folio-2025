@@ -1,4 +1,4 @@
-import { attribute, float, Fn, luminance, mix, uniform, vec4 } from 'three/tsl'
+import { attribute, float, Fn, luminance, mix, normalWorld, uniform, vec4 } from 'three/tsl'
 import { Game } from '../Game.js'
 import * as THREE from 'three/webgpu'
 import { smoothstep } from '../utilities/maths.js'
@@ -81,7 +81,7 @@ export class Christmas
         {
             const baseColor = attribute('color')
 
-            const lightOutputColor = this.game.lighting.lightOutputNodeBuilder(baseColor, totalShadows, false, false)
+            const lightOutputColor = this.game.lighting.lightOutputNodeBuilder(baseColor, normalWorld, totalShadows, false, false)
 
             const emissiveColor = baseColor.div(luminance(baseColor)).mul(2)
             return mix(lightOutputColor, emissiveColor, this.emissiveIntensity)

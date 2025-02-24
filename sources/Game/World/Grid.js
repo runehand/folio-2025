@@ -1,6 +1,7 @@
 import * as THREE from 'three/webgpu'
 import { Game } from '../Game.js'
 import MeshGridMaterial, { MeshGridMaterialLine } from '../Materials/MeshGridMaterial.js'
+import { normalWorld } from 'three/tsl'
 
 export class Grid
 {
@@ -43,7 +44,7 @@ export class Grid
         })
 
         // uvGridMaterial.outputNode = vec4(1)
-        uvGridMaterial.outputNode = this.game.lighting.lightOutputNodeBuilder(uvGridMaterial.outputNode.rgb, this.game.lighting.addTotalShadowToMaterial(uvGridMaterial))
+        uvGridMaterial.outputNode = this.game.lighting.lightOutputNodeBuilder(uvGridMaterial.outputNode.rgb, normalWorld, this.game.lighting.addTotalShadowToMaterial(uvGridMaterial))
 
         const ground = new THREE.Mesh(
             new THREE.PlaneGeometry(1000, 1000),

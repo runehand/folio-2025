@@ -71,7 +71,7 @@ export class Materials
         const colorA = uniform(new THREE.Color(_colorA))
         const colorB = uniform(new THREE.Color(_colorB))
         const baseColor = mix(colorA, colorB, uv().y)
-        material.outputNode = this.game.lighting.lightOutputNodeBuilder(baseColor, this.game.lighting.addTotalShadowToMaterial(material))
+        material.outputNode = this.game.lighting.lightOutputNodeBuilder(baseColor, normalWorld, this.game.lighting.addTotalShadowToMaterial(material))
         
         this.save(_name, material)
 
@@ -180,7 +180,7 @@ export class Materials
         {
             // Shadow
             material.shadowSide = THREE.BackSide
-            material.outputNode = this.game.lighting.lightOutputNodeBuilder(baseMaterial.color, this.game.lighting.addTotalShadowToMaterial(material))
+            material.outputNode = this.game.lighting.lightOutputNodeBuilder(baseMaterial.color, normalWorld, this.game.lighting.addTotalShadowToMaterial(material))
         }
 
         return material

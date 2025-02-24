@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu'
 import { Game } from '../Game.js'
-import { color, float, Fn, hash, instancedArray, instanceIndex, materialNormal, max, mod, positionGeometry, rotateUV, sin, smoothstep, step, storage, texture, uniform, vec2, vec3, vec4 } from 'three/tsl'
+import { color, float, Fn, hash, instancedArray, instanceIndex, max, mod, normalWorld, positionGeometry, rotateUV, sin, smoothstep, step, storage, texture, uniform, vec2, vec3, vec4 } from 'three/tsl'
 import { remapClamp } from '../utilities/maths.js'
 
 export class Rain
@@ -63,14 +63,11 @@ export class Rain
         const scaleBuffer = storage(new THREE.StorageInstancedBufferAttribute(scaleArray, 1), 'float', this.count).toAttribute()
         
         // Output color
-        this.material.outputNode = this.game.lighting.lightOutputNodeBuilder(color('#ffffff'), this.game.lighting.addTotalShadowToMaterial(this.material))
+        this.material.outputNode = this.game.lighting.lightOutputNodeBuilder(color('#ffffff'), vec3(1, 1, 1), this.game.lighting.addTotalShadowToMaterial(this.material))
 
         // Position
         this.material.positionNode = Fn(() =>
         {
-            // Normal
-            materialNormal.assign(vec3(1, 1, 1).normalize())
-
             // Position
             const dropPosition = this.positionBuffer.toAttribute().toVar()
             dropPosition.y.addAssign(this.visibleRatio.step(float(instanceIndex).div(this.count)).mul(this.elevation).mul(2))

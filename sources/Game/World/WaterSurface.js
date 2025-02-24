@@ -290,9 +290,10 @@ export class WaterSurface
 
         const totalShadow = this.game.lighting.addTotalShadowToMaterial(material)
 
+        material.normalNode = vec3(0, 1, 0)
         material.outputNode = Fn(() =>
         {
-            const lightOutput = this.game.lighting.lightOutputNodeBuilder(vec3(1), totalShadow, false, false).rgb
+            const lightOutput = this.game.lighting.lightOutputNodeBuilder(vec3(1), material.normalNode, totalShadow, false, false).rgb
 
             const blurOutput = this.blurOutputNode()
 

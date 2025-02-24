@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu'
 import { Game } from '../Game.js'
-import { attribute, cameraNormalMatrix, color, cross, dot, float, Fn, hash, If, materialNormal, min, mix, modelNormalMatrix, modelViewMatrix, PI, positionGeometry, positionLocal, positionWorld, rotateUV, texture, time, uniform, uv, uvec4, varying, vec2, vec3, vec4, viewportSize } from 'three/tsl'
+import { attribute, cameraNormalMatrix, color, cross, dot, float, Fn, hash, If, materialNormal, min, mix, modelNormalMatrix, modelViewMatrix, normalWorld, PI, positionGeometry, positionLocal, positionWorld, rotateUV, texture, time, uniform, uv, uvec4, varying, vec2, vec3, vec4, viewportSize } from 'three/tsl'
 import { clamp, remapClamp } from '../utilities/maths.js'
 
 export class Snow
@@ -89,6 +89,24 @@ export class Snow
 
             return elevation
         })
+
+        this.elevationBinding = this.game.debug.addManualBinding(
+            this.debugPanel,
+            this.elevation,
+            'value',
+            { label: 'elevation', min: -1, max: 1, step: 0.001 },
+            () =>
+            {
+                const rainRatio = remapClamp(this.game.weather.rain.value, 0.05, 0.3, 0, 1) * remapClamp(this.game.weather.temperature.value, 0, -5, 0, 1)
+                const meltRatio = remapClamp(this.game.weather.temperature.value, 0, 10, 0, -1)
+                const elevationStrength = (rainRatio + meltRatio) * this.game.dayCycles.progressDelta * 10
+
+                let newElevation = this.elevation.value + elevationStrength
+                newElevation = clamp(newElevation, -1, 0.5)
+                
+                return newElevation
+            }
+        )
     }
 
     setSnowElevation()
@@ -229,6 +247,7 @@ export class Snow
     {
         this.material = new THREE.MeshLambertNodeMaterial({ color: '#ffffff', transparent: true, wireframe: false })
 
+
         this.color = uniform(color('#ffffff'))
         this.fadeEdgeHigh = uniform(0.5)
         this.fadeEdgeLow = uniform(0.022)
@@ -241,6 +260,9 @@ export class Snow
 
         const deltaY = varying(float())
         const worldUv = varying(vec2())
+        const computeNormal = varying(vec3())
+
+        this.material.normalNode = computeNormal
 
         const pivot = attribute('pivot')
         // const debugColor = varying(color('red'))
@@ -304,7 +326,7 @@ export class Snow
 
             // Normal
             const newNormal = cross(positionA.sub(positionB), positionA.sub(positionC)).normalize()
-            materialNormal.assign(modelViewMatrix.mul(vec4(newNormal, 0)))
+            computeNormal.assign(modelViewMatrix.mul(vec4(newNormal, 0)))
 
             // Push down further more in water (after calculating normal)
             const waterDrop = terrainData.b.remapClamp(this.waterDropEdgeLow, this.waterDropEdgeHigh, 0, this.waterDropAmplitude.negate())
@@ -323,7 +345,7 @@ export class Snow
 
         this.material.outputNode = Fn(() =>
         {
-            const lightOutput = this.game.lighting.lightOutputNodeBuilder(this.color, totalShadow, false, false).rgb
+            const lightOutput = this.game.lighting.lightOutputNodeBuilder(this.color, computeNormal, totalShadow, false, false).rgb
             const alpha = deltaY.smoothstep(this.fadeEdgeLow, this.fadeEdgeHigh)
 
             // Twinkle
@@ -385,12 +407,7 @@ export class Snow
     update()
     {
         // Apply weather
-        const rainRatio = remapClamp(this.game.weather.rain.value, 0.05, 0.3, 0, 1) * remapClamp(this.game.weather.temperature.value, 0, -5, 0, 1)
-        const meltRatio = remapClamp(this.game.weather.temperature.value, 0, 10, 0, -1)
-        const elevationStrength = (rainRatio + meltRatio) * this.game.dayCycles.progressDelta * 10
-
-        this.elevation.value += elevationStrength
-        this.elevation.value = clamp(this.elevation.value, -1, 0.5)
+        this.elevationBinding.update()
 
         // Glitter
         this.glittersProgress.value = 1 + this.game.view.camera.position.x + this.game.view.camera.position.y + this.game.ticker.elapsedScaled * 0.4

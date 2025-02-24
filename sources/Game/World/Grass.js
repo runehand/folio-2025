@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu'
 import { Game } from '../Game.js'
-import { mul, max, step, output, color, sin, smoothstep, mix, matcapUV, float, mod, texture, transformNormalToView, uniformArray, varying, vertexIndex, rotateUV, cameraPosition, vec4, atan, vec3, vec2, modelWorldMatrix, Fn, attribute, uniform, normalLocal, normalWorld } from 'three/tsl'
+import { mul, max, step, output, color, sin, smoothstep, mix, matcapUV, float, mod, texture, transformNormalToView, uniformArray, varying, vertexIndex, rotateUV, cameraPosition, vec4, atan, vec3, vec2, modelWorldMatrix, Fn, attribute, uniform, normalWorld } from 'three/tsl'
 
 export class Grass
 {
@@ -155,11 +155,11 @@ export class Grass
 
         let baseColor = this.game.terrainData.colorNode(terrainData)
 
-        const normal = mix(vec3(0, 1, 0), vec3(1, 1, 1), terrainDataGrass.smoothstep(0.8, 1)).normalize()
+        this.material.normalNode = vec3(0, 1, 0)
         
         const lightenColor = baseColor.mul(this.game.lighting.colorUniform.mul(this.game.lighting.intensityUniform))
 
-        const coreShadowMix = normal.dot(this.game.lighting.directionUniform).smoothstep(this.game.lighting.coreShadowEdgeHigh, this.game.lighting.coreShadowEdgeLow)
+        const coreShadowMix = this.material.normalNode.dot(this.game.lighting.directionUniform).smoothstep(this.game.lighting.coreShadowEdgeHigh, this.game.lighting.coreShadowEdgeLow)
         const castShadowMix = totalShadows.oneMinus()
         const tipnessShadowMix = tipness.oneMinus().mul(terrainDataGrass)
         const combinedShadowMix = max(max(coreShadowMix, castShadowMix), tipnessShadowMix).clamp(0, 1)
@@ -170,7 +170,7 @@ export class Grass
         const foggedColor = this.game.fog.strength.mix(shadedColor, this.game.fog.color)
 
         this.material.outputNode = vec4(foggedColor, 1)
-        // this.material.outputNode = vec4(this.game.lighting.lightOutputNodeBuilder(baseColor), this.game.lighting.addTotalShadowToMaterial(this.material))
+        // this.material.outputNode = vec4(this.game.lighting.lightOutputNodeBuilder(baseColor, normalWorld), this.game.lighting.addTotalShadowToMaterial(this.material))
 
         // Debug
         if(this.game.debug.active)
