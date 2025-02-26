@@ -55,17 +55,18 @@ export class Entities
                 quaternion: physical.quaternion,
                 ...collidersOverload
             }
-
-            if(physical.name.startsWith('trimesh'))
+            if(physical.name.match(/^trimesh/i))
             {
                 collider.shape = 'trimesh'
                 collider.parameters = [ physical.geometry.attributes.position.array, physical.geometry.index.array ]
             }
-            else if(physical.name.startsWith('cube') || physical.name.startsWith('cuboid'))
+            else if(physical.name.match(/^cub/i))
             {
                 collider.shape = 'cuboid'
                 collider.parameters = [ physical.scale.x * 0.5, physical.scale.y * 0.5, physical.scale.z * 0.5 ]
             }
+            console.log(collider)
+
 
             colliders.push(collider)
         }

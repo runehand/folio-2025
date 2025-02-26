@@ -42,7 +42,7 @@ export class Materials
         dummy.color = threeColor.getHex(THREE.SRGBColorSpace)
         dummy.intensity = _intensity
 
-        const material = new THREE.MeshBasicNodeMaterial({ color: threeColor })
+        const material = new THREE.MeshBasicNodeMaterial({ color: threeColor, transparent: true })
         material.fog = false
         this.save(_name, material)
         
