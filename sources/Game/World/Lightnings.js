@@ -44,7 +44,6 @@ export class Lightnings
         this.setAnticipationParticles()
         this.setArc()
         this.setExplosionParticles()
-        
         this.setInterval()
     }
 
@@ -113,7 +112,7 @@ export class Lightnings
             
             // Material
             const material = new THREE.SpriteNodeMaterial()
-            material.color = this.materialReference.color
+            material.colorNode = this.materialReference.colorNode
             material.positionNode = this.anticipationParticles.positionNode(startTime)
             material.scaleNode = this.anticipationParticles.scaleNode(startTime)
             
@@ -205,7 +204,7 @@ export class Lightnings
 
             // Material
             const material = new THREE.MeshBasicNodeMaterial({ wireframe: false })
-            material.color = this.materialReference.color
+            material.colorNode = this.materialReference.colorNode
             material.vertexNode = this.arc.vertexNode(startTime)
 
             const mesh = new THREE.Mesh(this.arc.geometry, material)
