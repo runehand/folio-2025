@@ -10,8 +10,6 @@ export class PoleLights
     {
         this.game = Game.getInstance()
 
-        this.model = this.game.resources.poleLightsModel.scene
-
         // Debug
         if(this.game.debug.active)
         {
@@ -21,44 +19,54 @@ export class PoleLights
             })
         }
 
+        this.visualModel = this.game.resources.poleLightsVisualModel.scene
+        this.physicalModel = this.game.resources.poleLightsPhysicalModel.scene
+
+        this.setPhysical()
         this.setBase()
         this.setEmissives()
         this.setFireflies()
         this.setSwitchInterval()
+    }
 
-        this.game.ticker.events.on('tick', () =>
-        {
-            this.update()
-        })
+    setPhysical()
+    {
+        this.game.entities.addFromModels(
+            this.physicalModel,
+            null,
+            {
+                type: 'fixed',
+            }
+        )
     }
 
     setBase()
     {
-        this.game.materials.updateObject(this.model)
-        this.game.scene.add(this.model)
+        this.game.materials.updateObject(this.visualModel)
+        this.game.scene.add(this.visualModel)
 
-        this.model.traverse(_child =>
+        this.visualModel.traverse((_child) =>
         {
             if(_child.isMesh)
             {
                 _child.castShadow = true
-                _child.receiveShadow = _child.name.startsWith('poleLightEmissive') ? false : true
+                _child.receiveShadow = true
             }
         })
     }
 
     setEmissives()
     {
-        this.emissives = {}
-        this.emissives.items = []
-        this.model.traverse(_child =>
+        this.emissive = {}
+        this.emissive.offMaterial = this.game.materials.getFromName('glass')
+        this.emissive.onMaterial = this.game.materials.getFromName('emissiveGradientWarm')
+        this.emissive.mesh = null
+
+        this.visualModel.traverse((_child) =>
         {
-            if(_child.isMesh && _child.name.startsWith('poleLightEmissive'))
-                this.emissives.items.push(_child)
+            if(_child.isMesh && _child.name.startsWith('poleLightGlass'))
+                this.emissive.mesh = _child
         })
-        
-        this.emissives.offMaterial = this.game.materials.getFromName('glass')
-        this.emissives.onMaterial = this.game.materials.getFromName('emissiveGradientWarm')
     }
 
     setFireflies()
@@ -66,20 +74,20 @@ export class PoleLights
         this.firefliesScale = uniform(0)
 
         const countPerLight = 5
-        const count = this.emissives.items.length * countPerLight
+        const count = this.physicalModel.children.length * countPerLight
         const positions = new Float32Array(count * 3)
 
         let i = 0
-        for(const emissive of this.emissives.items)
+        for(const physical of this.physicalModel.children)
         {
             for(let j = 0; j < countPerLight; j++)
             {
                 const i3 = i * 3
 
                 const angle = Math.random() * Math.PI * 2
-                positions[i3 + 0] = emissive.position.x + Math.cos(angle)
-                positions[i3 + 1] = emissive.position.y
-                positions[i3 + 2] = emissive.position.z + Math.sin(angle)
+                positions[i3 + 0] = physical.position.x + Math.cos(angle)
+                positions[i3 + 1] = physical.position.y + 1
+                positions[i3 + 2] = physical.position.z + Math.sin(angle)
                 i++
             }
         }
@@ -87,7 +95,7 @@ export class PoleLights
         const positionAttribute = storage(new THREE.StorageInstancedBufferAttribute(positions, 3), 'vec3', count).toAttribute()
 
         const material = new THREE.SpriteNodeMaterial()
-        material.colorNode = this.emissives.onMaterial.colorNode
+        material.colorNode = this.emissive.onMaterial.colorNode
 
         const baseTime = this.game.ticker.elapsedScaledUniform.add(hash(instanceIndex).mul(999))
         const flyOffset = vec3(
@@ -114,23 +122,16 @@ export class PoleLights
         {
             if(inInverval)
             {
-                for(const emissive of this.emissives.items)
-                    emissive.material = this.emissives.onMaterial
+                this.emissive.mesh.material = this.emissive.onMaterial
 
                 gsap.to(this.firefliesScale, { value: 1, duration: 5 })
             }
             else
             {
-                for(const emissive of this.emissives.items)
-                    emissive.material = this.emissives.offMaterial
+                this.emissive.mesh.material = this.emissive.offMaterial
 
                 gsap.to(this.firefliesScale, { value: 0, duration: 5, overwrite: true })
             }
         })
-    }
-
-    update()
-    {
-        
     }
 }

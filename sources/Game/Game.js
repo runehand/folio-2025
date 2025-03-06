@@ -75,7 +75,8 @@ export class Game
                     { path: 'scenery/sceneryStaticVisual.glb', type: 'gltf', name: 'sceneryStaticVisualModel' },
                     { path: 'scenery/sceneryStaticPhysical.glb', type: 'gltf', name: 'sceneryStaticPhysicalModel' },
                     { path: 'scenery/sceneryDynamic.glb', type: 'gltf', name: 'sceneryDynamicModel' },
-                    { path: 'poleLights/poleLights.glb', type: 'gltf', name: 'poleLightsModel' },
+                    { path: 'poleLights/poleLightsVisual.glb', type: 'gltf', name: 'poleLightsVisualModel' },
+                    { path: 'poleLights/poleLightsPhysical.glb', type: 'gltf', name: 'poleLightsPhysicalModel' },
                     { path: 'whispers/whisperBeam.png', type: 'texture', name: 'whisperBeamTexture' },
                     
                     // { path: 'christmas/christmasTreeVisual.glb', type: 'gltf', name: 'christmasTreeVisualModel' },

@@ -288,9 +288,7 @@ export class Materials
         mesh.traverse((child) =>
         {
             if(child.isMesh)
-            {
                 child.material = this.getFromName(child.material.name, child.material)
-            }
         })
     }
 }

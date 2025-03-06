@@ -1,7 +1,6 @@
-import { defineConfig } from 'vite'
 import restart from 'vite-plugin-restart'
 
-export default defineConfig({
+export default {
     root: 'sources/', // Sources files (typically where index.html is)
     envDir: '../',  // Directory where the env file is located
     publicDir: '../static/', // Path from "root" to static assets (files that are served as they are)
@@ -21,4 +20,4 @@ export default defineConfig({
     [
         restart({ restart: [ '../static/**', ] }) // Restart server on static file change
     ]
-})
+}
