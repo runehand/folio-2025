@@ -37,6 +37,7 @@ export class Bubble
         this.canvas.texture.colorSpace = THREE.SRGBColorSpace
         this.canvas.texture.minFilter = THREE.NearestFilter
         this.canvas.texture.magFilter = THREE.NearestFilter
+        this.canvas.texture.generateMipmaps = false
         this.canvas.texture.anisotropy = 8
 
         this.context = this.canvas.element.getContext('2d')
