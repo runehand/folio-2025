@@ -86,8 +86,6 @@ export class Easter
         this.eggs.allCaught = false
         this.eggs.catchDistance = 2
         this.eggs.closest = null
-        // this.eggs.containerElement = this.element.querySelector('.eggs')
-        // this.eggs.fragmentElements = this.eggs.containerElement.querySelectorAll('.fragment')
 
         // References
         const references = InstancedGroup.getReferencesFromChildren(this.game.resources.easterEggReferencesModel.scene.children)
@@ -158,28 +156,18 @@ export class Easter
         {
             // this.game.sounds.eggs.catch()
             egg.catch()
-            // egg.element.innerHTML = /* html */`
-            //     <div class="character">${egg.character}</div>
-            //     <div class="bottom"></div>
-            //     <div class="stroke"></div>
-            //     <div class="particles">
-            //         <div class="particle"></div>
-            //         <div class="particle"></div>
-            //         <div class="particle"></div>
-            //         <div class="particle"></div>
-            //         <div class="particle"></div>
-            //         <div class="particle"></div>
-            //         <div class="particle"></div>
-            //         <div class="particle"></div>
-            //         <div class="particle"></div>
-            //         <div class="particle"></div>
-            //     </div>
-            // `
-            // requestAnimationFrame(() =>
-            // {
-            //     egg.element.classList.add('is-caught')
-            // })
+            this.eggs.updateTitle()
             this.eggs.testOver()
+        }
+
+        this.eggs.updateTitle = () =>
+        {
+            let title = ''
+            this.eggs.items.forEach(item =>
+            {
+                title += item.caught ? '🐣' : '🥚'
+            })
+            document.title = title
         }
 
         this.eggs.testOver = () =>
