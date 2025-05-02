@@ -71,7 +71,6 @@
                 height 36px
                 background red
                 background-size cover
-                image-rendering pixelated
                 transform rotate(15deg)
                 display none
 
@@ -181,6 +180,8 @@
 
                     .flag
                         display none
+                        width 27px
+                        height 18px
 
                     &:hover
                         svg
@@ -198,13 +199,14 @@
                     position absolute
                     bottom 0
                     left 8px
-                    width 200px
-                    height 200px
+                    width 350px
+                    height 240px
                     background radial-gradient(ellipse at top left, #251f2b, #1d1721)
                     border-radius 8px 8px 0 0
                     border 1px solid #767676
                     border-bottom none
                     overflow hidden
+                    white-space nowrap
 
                     &.is-visible
                         display block
@@ -283,6 +285,7 @@
                             width calc(100% + 20px)
                             height 100%
                             overflow-y scroll
+                            overflow-x hidden
 
                         .choice
                             display flex
@@ -298,6 +301,8 @@
 
                             .flag
                                 margin-right 8px
+                                width 27px
+                                height 18px
         .text
             a
                 color inherit

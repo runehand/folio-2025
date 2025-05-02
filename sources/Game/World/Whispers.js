@@ -5,6 +5,7 @@ import { hash } from 'three/tsl'
 import gsap from 'gsap'
 import { Bubble } from './Bubble.js'
 import emojiRegex from 'emoji-regex'
+import countries from '../countries.js'
 
 export class Whispers
 {
@@ -382,6 +383,7 @@ export class Whispers
         this.modal.flagRemove = this.modal.inputFlag.querySelector('.js-flag-remove')
         this.modal.flagNoResult = this.modal.inputFlag.querySelector('.js-no-result')
         this.modal.previewMessageFlag = this.modal.previewMessage.querySelector('.js-flag')
+        this.modal.flagScroller = this.modal.inputFlag.querySelector('.js-scroller')
 
         this.modal.flagsSelectOpen = false
         this.modal.flagActive = null
@@ -422,15 +424,22 @@ export class Whispers
         })
 
         // Countries
-        const choices = this.modal.inputFlag.querySelectorAll('.js-choice')
-
-        for(const _choice of choices)
+        for(const _country of countries)
         {
+            const imageUrl = `ui/flags/${_country[2]}.png`
+            const element = document.createElement('div')
+            element.classList.add('choice')
+            element.innerHTML = /* html */`
+                <img class="js-flag flag" src="${imageUrl}">
+                <span class="label">${_country[0]} (${_country[2]})</span>
+            `
+            this.modal.flagScroller.appendChild(element)
+            
             const country = {}
-            country.element = _choice
-            country.terms = country.element.dataset.terms
-            country.imageUrl = country.element.querySelector('.js-flag').src
-            country.code = country.element.dataset.code
+            country.element = element
+            country.terms = `${_country[0]} ${_country[1]} ${_country[2]}`
+            country.imageUrl = imageUrl
+            country.code = _country[2]
 
             country.element.addEventListener('click', () =>
             {
@@ -461,7 +470,7 @@ export class Whispers
             {
                 this.countries.forEach((country) =>
                 {
-                    if(country.terms.match(new RegExp(sanatizedValue)))
+                    if(country.terms.match(new RegExp(sanatizedValue, 'i')))
                     {
                         found = true
                         country.element.style.display = 'block'

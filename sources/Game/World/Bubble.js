@@ -89,11 +89,39 @@ export class Bubble
 
     setImage()
     {
+        // Geometry
         const size = 0.25
         const geometry = new THREE.PlaneGeometry(size * 3 / 2, size)
 
+        // Texture
+        this.imageTexture = new THREE.Texture()
+        this.imageTexture.colorSpace = THREE.SRGBColorSpace
+        this.imageTexture.magFilter = THREE.NearestFilter
+        this.imageTexture.minFilter = THREE.NearestFilter
+        this.imageTexture.generateMipmaps = false
+        
+        const image = new Image()
+        image.addEventListener('load', () =>
+        {
+            this.imageTexture.needsUpdate = true
+        })
+        this.imageTexture.image = image
+        
+        // Material
         const material = new THREE.MeshBasicNodeMaterial({ color: 0xffffff, transparent: true, depthWrite: false, depthTest: false })
 
+        material.outputNode = Fn(() =>
+        {
+            // Base color
+            const baseColor = texture(this.imageTexture, uv())
+
+            // Fog
+            const foggedColor = this.game.fog.strength.mix(baseColor, this.game.fog.color)
+
+            return vec4(foggedColor.rgb, 1)
+        })()
+
+        // Mesh
         this.image = new THREE.Mesh(geometry, material)
         this.image.scale.set(0.01, 0.01, 0.01)
         this.image.position.y = 0.25
@@ -101,9 +129,6 @@ export class Bubble
         this.image.rotation.z = -0.15
         this.image.renderOrder = 3
         this.group.add(this.image)
-
-        this.textureLoader = new THREE.TextureLoader()
-        this.imageTextures = new Map()
     }
 
     tryShow(text = '', position = null, imageUrl = null)
@@ -239,20 +264,11 @@ export class Bubble
 
     updateImage(url = null)
     {
-        // Has URL => Load, show, save
+        // Has URL => Change image texture, show
         if(url)
         {
-            let texture = this.imageTextures.get(url)
-
-            if(!texture)
-            {
-                texture = this.textureLoader.load(url)
-                texture.colorSpace = THREE.SRGBColorSpace
-                this.imageTextures.set(url, texture)
-            }
-
+            this.imageTexture.image.src = this.imageTexture.image.src = url
             this.image.visible = true
-            this.image.material.map = texture
         }
 
         // No URL => Hide
