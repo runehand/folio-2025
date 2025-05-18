@@ -46,6 +46,7 @@ export class Projects
         this.setUrl()
         this.setDistinctions()
         this.setPendulum()
+        this.setBoard()
 
         this.changeProject(0)
 
@@ -759,8 +760,31 @@ export class Projects
         
         const timeline1 = gsap.timeline({ yoyo: true, repeat: -1, delay: 1.5 })
         timeline1.to(this.parameters.balls[1].rotation, { x: -0.75, ease: 'power2.out', delay: 0.75, duration: 0.75 })
+    }
+
+    setBoard()
+    {
+        this.board = {}
+        this.board.active = true
         
-        console.log(this.parameters.balls)
+        this.board.timeline = gsap.timeline({
+            repeat: 1,
+            repeatDelay: 5,
+            onRepeat: () =>
+            {
+                if(!this.opened || !this.board.active)
+                    this.board.timeline.pause()
+            }
+        })
+
+        this.board.timeline.to(this.parameters.board.position, { y: 0.25, ease: 'power2.out', duration: 0.7 }, 0)
+        this.board.timeline.to(this.parameters.board.position, { y: 0, ease: 'power2.in', duration: 0.7 }, 0.7)
+
+        this.board.timeline.to(this.parameters.board.rotation, { x: 0.1, duration: 0.15 }, 0)
+        this.board.timeline.to(this.parameters.board.rotation, { x: -0.1, duration: 0.3 }, 0.15)
+        this.board.timeline.to(this.parameters.board.rotation, { x: 0.1, duration: 0.3 }, 0.45)
+        this.board.timeline.to(this.parameters.board.rotation, { x: -0.1, duration: 0.3 }, 0.75)
+        this.board.timeline.to(this.parameters.board.rotation, { x: 0, duration: 0.3 }, 1.05)
     }
 
     open()
@@ -782,6 +806,13 @@ export class Projects
         // Shade mix
         gsap.to(this.shadeMix.images.uniform, { value: this.shadeMix.images.max, duration: 2, ease: 'power2.inOut', overwrite: true })
         gsap.to(this.shadeMix.texts.uniform, { value: this.shadeMix.texts.max, duration: 2, ease: 'power2.inOut', overwrite: true })
+
+        // Board
+        if(this.board.active)
+        {
+            this.board.timeline.repeat(-1)
+            this.board.timeline.resume()
+        }
     }
 
     close()
@@ -817,6 +848,8 @@ export class Projects
             this.changeImage(this.imageIndex - 1, Projects.DIRECTION_PREVIOUS)
         else
             this.changeProject(this.index - 1, Projects.DIRECTION_PREVIOUS)
+
+        this.board.active = false
     }
 
     next()
@@ -828,6 +861,8 @@ export class Projects
             this.changeImage(this.imageIndex + 1, Projects.DIRECTION_NEXT)
         else
             this.changeProject(this.index + 1, Projects.DIRECTION_NEXT)
+
+        this.board.active = false
     }
 
     changeProject(index = 0, direction = Projects.DIRECTION_NEXT)

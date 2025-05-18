@@ -48,7 +48,8 @@ export class Scenery
             this.references.projectsNext &&
             this.references.projectsAttributes &&
             this.references.projectsPagination &&
-            this.references.projectsDistinctions
+            this.references.projectsBalls &&
+            this.references.projectsBoard
         )
             this.projects = new Projects({
                 carpet: this.references.projectsCarpet[0],
@@ -61,7 +62,8 @@ export class Scenery
                 attributes: this.references.projectsAttributes[0],
                 pagination: this.references.projectsPagination[0],
                 distinctions: this.references.projectsDistinctions[0],
-                balls: this.references.projectsBalls
+                balls: this.references.projectsBalls,
+                board: this.references.projectsBoard[0]
             })
 
         if(this.references.altar && this.references.altarCounter && this.references.altarSkullEyes)
