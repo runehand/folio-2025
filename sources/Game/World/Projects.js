@@ -272,6 +272,34 @@ export class Projects
 
         this.images.mesh.material = this.images.material
 
+        // Adjacents
+        const intersectPrevious = this.references.get('intersectPreviousImage')[0]
+        this.images.previousIntersect = this.game.cursor.addIntersects({
+            active: false,
+            shapes:
+            [
+                new THREE.Sphere(intersectPrevious.position, intersectPrevious.scale.x)
+            ],
+            onClick: () =>
+            {
+                this.previous()
+            }
+        })
+
+        const intersectNext = this.references.get('intersectNextImage')[0]
+        this.images.nextIntersect = this.game.cursor.addIntersects({
+            active: false,
+            shapes:
+            [
+                new THREE.Sphere(intersectNext.position, intersectNext.scale.x)
+            ],
+            onClick: () =>
+            {
+                this.next()
+            }
+        })
+
+
         // Load ended
         this.images.loadEnded = (key) =>
         {
@@ -578,7 +606,7 @@ export class Projects
         )
         this.texts.createMaterialOnMesh(this.adjacents.previous.textMesh, this.adjacents.previous.textWrapper.texture)
         
-        const intersectPrevious = this.references.get('intersectPrevious')[0]
+        const intersectPrevious = this.references.get('intersectPreviousProject')[0]
         this.adjacents.previous.intersect = this.game.cursor.addIntersects({
             active: false,
             shapes:
@@ -608,7 +636,7 @@ export class Projects
         )
         this.texts.createMaterialOnMesh(this.adjacents.next.textMesh, this.adjacents.next.textWrapper.texture)
 
-        const intersectNext = this.references.get('intersectNext')[0]
+        const intersectNext = this.references.get('intersectNextProject')[0]
         this.adjacents.next.intersect = this.game.cursor.addIntersects({
             active: false,
             shapes:
@@ -925,6 +953,8 @@ export class Projects
             
         this.adjacents.next.intersect.active = true
         this.adjacents.previous.intersect.active = true
+        this.images.previousIntersect.active = true
+        this.images.nextIntersect.active = true
 
         // Deactivate physical vehicle
         this.game.physicalVehicle.deactivate()
