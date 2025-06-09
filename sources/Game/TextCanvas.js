@@ -1,8 +1,18 @@
 import * as THREE from 'three/webgpu'
 
+let top = 0
 export class TextCanvas
 {
-    constructor(fontFamily = 'Comic Sans', fontWeight = '400', fontSize = 10, width = null, height = null, density = 1, horizontalAlign = 'center', lineHeight = 1)
+    constructor(
+        fontFamily = 'Comic Sans',
+        fontWeight = '400',
+        fontSize = 10,
+        width = null,
+        height = null,
+        density = 1,
+        horizontalAlign = 'center',
+        lineHeight = 1
+    )
     {
         this.lines = []
         this.font = `${fontWeight} ${fontSize * density}px "${fontFamily}"`
@@ -10,7 +20,6 @@ export class TextCanvas
         this.height = Math.ceil(height * density)
         this.horizontalAlign = horizontalAlign
         this.lineHeight = lineHeight * density
-        // TODO: Padding
 
         this.setCanvas()
         this.setTexture()
@@ -23,8 +32,9 @@ export class TextCanvas
         this.canvas.height = this.height
         this.canvas.style.position = 'fixed'
         this.canvas.style.zIndex = 999
-        this.canvas.style.top = 0
+        this.canvas.style.top = `${top}px`
         this.canvas.style.left = 0
+        top += this.height + 10
         // document.body.append(this.canvas)
 
         this.context = this.canvas.getContext('2d')
