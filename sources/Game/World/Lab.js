@@ -242,7 +242,7 @@ export class Lab
     setNavigation()
     {
         this.navigation = {}
-        this.navigation.index = 0
+        this.navigation.index = -1
         this.navigation.current = null
         this.navigation.next = null
         this.navigation.previous = null
@@ -718,11 +718,13 @@ export class Lab
             this.scroller.minis.items = []
             this.scroller.minis.amplitude = 3
             this.scroller.minis.total = this.data.length * this.scroller.minis.inter
+            this.scroller.minis.current = null
 
             let i = 0
             for(const project of this.data)
             {
                 const mini = {}
+                mini.index = i
                 mini.y = - i * this.scroller.minis.inter
                 this.scroller.minis.items.push(mini)
 
@@ -732,68 +734,134 @@ export class Lab
                 mini.group.visible = true
                 parent.add(mini.group)
 
-                // Image
-                const material = new THREE.MeshLambertNodeMaterial()
+                // Elements
+                let imageMesh = null
+                let textMesh = null
+                let panelMesh = null
+                let intersectMesh = null
 
-                const loadProgress = uniform(0)
-                const totalShadows = this.game.lighting.addTotalShadowToMaterial(this.images.material)
-
-                const imageElement = new Image()
-                imageElement.width = 240
-                imageElement.height = 135
-                imageElement.onload = () =>
+                for(const child of mini.group.children)
                 {
-                    gsap.to(loadProgress, { value: 1, duration: 0.3, overwrite: true })
-                    imageTexture.needsUpdate = true
+                    if(child.name.startsWith('image'))
+                        imageMesh = child
+                    if(child.name.startsWith('text'))
+                        textMesh = child
+                    if(child.name.startsWith('panel'))
+                        panelMesh = child
+                    if(child.name.startsWith('intersect'))
+                        intersectMesh = child
                 }
-                imageElement.src = `lab/images/${project.imageMini}`
 
-                const imageTexture = new THREE.Texture(imageElement)
-                imageTexture.colorSpace = THREE.SRGBColorSpace
-                imageTexture.flipY = false
-                imageTexture.magFilter = THREE.LinearFilter
-                imageTexture.minFilter = THREE.LinearFilter
-                imageTexture.generateMipmaps = false
-
-                material.outputNode = Fn(() =>
+                // Image
                 {
-                    const textureColor = texture(imageTexture).rgb
-                    textureColor.assign(mix(color('#333333'), textureColor, this.images.loadProgress))
-        
-                    const shadedOutput = this.game.lighting.lightOutputNodeBuilder(textureColor, float(1), normalWorld, totalShadows)
+                    const material = new THREE.MeshLambertNodeMaterial()
 
-                    return vec4(mix(shadedOutput.rgb, textureColor, this.shadeMix.images.uniform), 1)
-                })()
-                mini.image = mini.group.children.find(_child => _child.name.startsWith('image'))
-                mini.image.receiveShadow = true
-                mini.image.castShadow = false
-                mini.image.material = material
+                    const loadProgress = uniform(0)
+                    const totalShadows = this.game.lighting.addTotalShadowToMaterial(this.images.material)
+
+                    const imageElement = new Image()
+                    imageElement.width = 240
+                    imageElement.height = 135
+                    imageElement.onload = () =>
+                    {
+                        gsap.to(loadProgress, { value: 1, duration: 0.3, overwrite: true })
+                        imageTexture.needsUpdate = true
+                    }
+                    imageElement.src = `lab/images/${project.imageMini}`
+
+                    const imageTexture = new THREE.Texture(imageElement)
+                    imageTexture.colorSpace = THREE.SRGBColorSpace
+                    imageTexture.flipY = false
+                    imageTexture.magFilter = THREE.LinearFilter
+                    imageTexture.minFilter = THREE.LinearFilter
+                    imageTexture.generateMipmaps = false
+
+                    material.outputNode = Fn(() =>
+                    {
+                        const textureColor = texture(imageTexture).rgb
+                        textureColor.assign(mix(color('#333333'), textureColor, loadProgress))
+            
+                        const shadedOutput = this.game.lighting.lightOutputNodeBuilder(textureColor, float(1), normalWorld, totalShadows)
+
+                        return vec4(mix(shadedOutput.rgb, textureColor, this.shadeMix.images.uniform), 1)
+                    })()
+                    imageMesh.receiveShadow = true
+                    imageMesh.castShadow = false
+                    imageMesh.material = material
+                }
 
                 // Text
-                const textMesh = mini.group.children.find(_child => _child.name.startsWith('text'))
-                const panelMesh = mini.group.children.find(_child => _child.name.startsWith('panel'))
-                const textCanvas = new TextCanvas(
-                    this.texts.fontFamily,
-                    this.texts.fontWeight,
-                    this.texts.fontSizeMultiplier * 0.18,
-                    1.5,
-                    0.2,
-                    this.texts.density,
-                    'center',
-                    0.2
-                )
-                textCanvas.updateText(project.title)
+                {
+                    const textCanvas = new TextCanvas(
+                        this.texts.fontFamily,
+                        this.texts.fontWeight,
+                        this.texts.fontSizeMultiplier * 0.18,
+                        1.5,
+                        0.2,
+                        this.texts.density,
+                        'center',
+                        0.2
+                    )
+                    textCanvas.updateText(project.title)
 
-                const ratio = textCanvas.getMeasure().width / this.texts.density
-                panelMesh.scale.x = ratio + 0.2
+                    const ratio = textCanvas.getMeasure().width / this.texts.density
+                    panelMesh.scale.x = ratio + 0.2
 
-                this.texts.createMaterialOnMesh(textMesh, textCanvas.texture)
+                    const material = new THREE.MeshLambertNodeMaterial({ transparent: true })
+
+                    const alpha = texture(textCanvas.texture).r
+                    mini.textMixStrength = uniform(0)
+
+                    const shadedOutput = this.game.lighting.lightOutputNodeBuilder(this.texts.baseColor, float(1), normalWorld, float(1)).rgb
+                    material.outputNode = vec4(
+                        mix(
+                            mix(
+                                shadedOutput,
+                                this.texts.baseColor,
+                                this.shadeMix.texts.uniform
+                            ),
+                            this.texts.baseColor.mul(1.5),
+                            mini.textMixStrength
+                        ),
+                        alpha
+                    )
+
+                    // Mesh
+                    textMesh.castShadow = false
+                    textMesh.receiveShadow = false
+                    textMesh.material = material
+                }
+
+                // Intersect  
+                intersectMesh.visible = false      
+                mini.intersect = this.game.cursor.addIntersects({
+                    active: false,
+                    shapes:
+                    [
+                        intersectMesh
+                    ],
+                    onClick: () =>
+                    {
+                        this.changeProject(mini.index)
+                    },
+                    onEnter: () =>
+                    {
+                        mini.textMixStrength.value = 1
+                    },
+                    onLeave: () =>
+                    {
+                        if(mini.index === this.navigation.index)
+                            mini.textMixStrength.value = 1
+                        else
+                            mini.textMixStrength.value = 0
+                    }
+                })
 
                 i++
             }
         }
 
-        this.scroller.update = () =>
+        this.scroller.animate = () =>
         {
             this.scroller.chainLeft.position.y = - this.scroller.repeatAmplitude * 0.5 - this.scroller.offset % this.scroller.repeatAmplitude
             this.scroller.chainRight.position.y = - this.scroller.repeatAmplitude * 0.5 + (this.scroller.offset % this.scroller.repeatAmplitude)
@@ -801,7 +869,6 @@ export class Lab
 
             for(const mini of this.scroller.minis.items)
             {
-                
                 mini.group.position.y = safeMod(mini.y - this.scroller.offset, this.scroller.minis.total) - 1
 
                 const scale = remapClamp(mini.group.position.y, 3.1, 3.7, 1, 0)
@@ -809,7 +876,23 @@ export class Lab
                 mini.group.rotation.y = 0.523 - (1 - scale) * 3
 
                 mini.group.visible = scale > 0
+                mini.intersect.active = mini.group.visible && (this.state === Lab.STATE_OPEN || this.state === Lab.STATE_OPENING)
             }
+        }
+
+        this.scroller.update = () =>
+        {
+            // Scroll
+            const closestProgress = Math.round((this.scroller.progress + this.navigation.index - 3) / this.data.length) * this.data.length - this.navigation.index + 3
+            this.scroller.targetProgress = closestProgress
+
+            // Active text
+            if(this.scroller.minis.current)
+                this.scroller.minis.current.textMixStrength.value = 0
+
+            const mini = this.scroller.minis.items[this.navigation.index]
+            mini.textMixStrength.value = 1
+            this.scroller.minis.current = mini
         }
 
         this.game.ticker.events.on('tick', () =>
@@ -817,7 +900,7 @@ export class Lab
             this.scroller.progress += (this.scroller.targetProgress - this.scroller.progress) * this.game.ticker.deltaScaled * this.scroller.easing
             this.scroller.offset = this.scroller.progress * this.scroller.minis.inter
 
-            this.scroller.update()
+            this.scroller.animate()
         })
 
         // Inputs
@@ -829,7 +912,6 @@ export class Lab
         {
             this.scroller.targetProgress -= wheelValue * this.scroller.wheelSensitivity
         })
-
     }
 
     setPendulum()
@@ -1132,6 +1214,10 @@ export class Lab
         else if(loopIndex < 0)
             loopIndex = this.data.length - 1
 
+        // Already active
+        if(this.navigation.index === loopIndex)
+            return
+
         // Save
         this.navigation.index = loopIndex
         this.navigation.current = this.data[this.navigation.index]
@@ -1143,6 +1229,9 @@ export class Lab
         this.title.update(direction)
         this.url.update(direction)
         this.images.update()
+
+        // Scroller
+        this.scroller.update(this.navigation.index)
     }
 
     update()
