@@ -10,17 +10,23 @@ export class Controls
         this.references = references
 
         this.setInteractiveArea()
+
+        this.game.modals.items.get('controls').events.on('close', () =>
+        {
+            this.interactiveArea.reveal()
+        })
     }
 
     setInteractiveArea()
     {
-        this.game.interactiveAreas.create(
+        this.interactiveArea = this.game.interactiveAreas.create(
             this.references.get('interactiveArea')[0].position,
             'Controls',
             InteractiveAreas.ALIGN_RIGHT,
             () =>
             {
                 this.game.modals.open('controls')
+                this.interactiveArea.hide()
             },
             () =>
             {

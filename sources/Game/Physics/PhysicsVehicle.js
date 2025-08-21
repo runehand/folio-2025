@@ -372,9 +372,12 @@ export class PhysicsVehicle
 
         brake *= this.brakeAmplitude * this.game.ticker.deltaScaled
 
+        // Steer
+        const steer = this.game.player.steering * this.steeringAmplitude
+
         // Update wheels
-        this.controller.setWheelSteering(0, this.game.player.steering * this.steeringAmplitude)
-        this.controller.setWheelSteering(1, this.game.player.steering * this.steeringAmplitude)
+        this.controller.setWheelSteering(0, steer)
+        this.controller.setWheelSteering(1, steer)
 
         for(let i = 0; i < 4; i++)
         {

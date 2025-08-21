@@ -19,18 +19,20 @@ export class Intro
                 this.game.audio.music.play()
             
             firstTimeIntro = false
+            this.interactiveArea.reveal()
         })
     }
 
     setInteractiveArea()
     {
-        this.game.interactiveAreas.create(
+        this.interactiveArea = this.game.interactiveAreas.create(
             this.references.get('interactiveArea')[0].position,
             'Read me!',
             InteractiveAreas.ALIGN_RIGHT,
             () =>
             {
                 this.game.modals.open('intro')
+                this.interactiveArea.hide()
             },
             () =>
             {
