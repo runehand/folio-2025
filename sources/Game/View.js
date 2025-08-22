@@ -13,12 +13,14 @@ export class View
     static MODE_DEFAULT = 1
     static MODE_FREE = 2
 
-    constructor()
+    constructor(idealRatio = 1920 / 1080)
     {
         this.game = Game.getInstance()
         
         this.mode = View.MODE_DEFAULT
         this.position = new THREE.Vector3()
+        this.idealRatio = idealRatio
+        this.ratioOverflow = Math.max(1, this.idealRatio / this.game.viewport.ratio) - 1
 
         if(this.game.debug.active)
         {
@@ -276,6 +278,7 @@ export class View
         this.spherical.radius = {}
         this.spherical.radius.edges = { min: 15, max: 30 }
         this.spherical.radius.current = lerp(this.spherical.radius.edges.min, this.spherical.radius.edges.max, 1 - this.zoom.smoothedRatio)
+        this.spherical.radius.nonIdealRatioOffset = 10
 
         this.spherical.offset = new THREE.Vector3()
         this.spherical.offset.setFromSphericalCoords(this.spherical.radius.current, this.spherical.phi, this.spherical.theta)
@@ -328,7 +331,7 @@ export class View
 
     setCameras()
     {
-        this.camera = new THREE.PerspectiveCamera(25, this.game.viewport.ratio, 0.1, 50)
+        this.camera = new THREE.PerspectiveCamera(25, this.game.viewport.ratio, 0.1, 200)
         this.camera.position.setFromSphericalCoords(this.spherical.radius.current, this.spherical.phi, this.spherical.theta)
 
         this.defaultCamera = this.camera.clone()
@@ -353,6 +356,7 @@ export class View
         this.cinematic.position = new THREE.Vector3()
         this.cinematic.target = new THREE.Vector3()
         this.cinematic.dummy = this.camera.clone()
+        this.cinematic.nonIdealRatioOffset = 10
 
         // this.cinematic.targetHelper = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicNodeMaterial({ color: '#ff00ff', wireframe: true }))
         // this.game.scene.add(this.cinematic.targetHelper)
@@ -364,16 +368,11 @@ export class View
 
             this.cinematic.targetHelper?.position.copy(this.cinematic.target)
 
-            const idealRatio = 1920 / 1080
-            const currentRatio = this.game.viewport.width / this.game.viewport.height
-            const fixRatio = Math.max(1, idealRatio / currentRatio) - 1
-
-            if(fixRatio > 0)
+            if(this.ratioOverflow > 0)
             {
-                const delta = this.cinematic.position.clone().sub(this.cinematic.target).setLength(fixRatio * 10)
+                const delta = this.cinematic.position.clone().sub(this.cinematic.target).setLength(this.ratioOverflow * this.cinematic.nonIdealRatioOffset)
                 this.cinematic.position.add(delta)
             }
-
 
             gsap.to(this.cinematic, { progress: 1, duration: 2, ease: 'power2.inOut', overwrite: true })
         }
@@ -489,6 +488,8 @@ export class View
 
     resize()
     {
+        this.ratioOverflow = Math.max(1, this.idealRatio / this.game.viewport.ratio) - 1
+
         this.camera.aspect = this.game.viewport.width / this.game.viewport.height
         this.camera.updateProjectionMatrix()
 
@@ -588,7 +589,8 @@ export class View
         }
 
         // Radius
-        this.spherical.radius.current = lerp(this.spherical.radius.edges.min, this.spherical.radius.edges.max, 1 - this.zoom.smoothedRatio)
+        const radiusMax = this.spherical.radius.edges.max + this.ratioOverflow * this.spherical.radius.nonIdealRatioOffset
+        this.spherical.radius.current = lerp(this.spherical.radius.edges.min, radiusMax, 1 - this.zoom.smoothedRatio)
         this.spherical.offset.setFromSphericalCoords(this.spherical.radius.current, this.spherical.phi, this.spherical.theta)
 
         // Position
