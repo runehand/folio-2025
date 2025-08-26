@@ -3,16 +3,21 @@ import * as THREE from 'three/webgpu'
 import { Game } from './Game.js'
 import { clamp } from 'three/src/math/MathUtils.js'
 import { smallestAngle } from './utilities/maths.js'
+import gsap from 'gsap'
+import { Events } from './Events.js'
 
 export class Nipple
 {
     constructor()
     {
         this.game = Game.getInstance()
+
+        this.events = new Events()
         this.position = new THREE.Vector3()
         this.raycaster = new THREE.Raycaster()
 
         this.active = false
+        this.animated = false
         this.rotation = 0
         this.progress = 0
         this.smallestRotation = 0
@@ -26,22 +31,12 @@ export class Nipple
         {
             this.update()
         }, 1)
-        
-        // Debug
-        if(this.game.debug.active)
-        {
-            this.debugPanel = this.game.debug.panel.addFolder({
-                title: '🕹️ Touch Joystick',
-                expanded: true,
-            })
-            this.debugPanel.addBinding(this.uniforms.progress, 'value', { label: 'progress', min: 0, max: 1 })
-            this.debugPanel.addBinding(this.uniforms.forward, 'value', { label: 'forward', min: 0, max: 1, step: 1 })
-        }
     }
 
     setMeshes()
     {
         this.group = new THREE.Group()
+        this.group.visible = false
         this.game.scene.add(this.group)
 
         const geometry = new THREE.PlaneGeometry(1, 1)
@@ -121,7 +116,6 @@ export class Nipple
         })()
         
         this.mesh = new THREE.Mesh(geometry, material)
-        this.mesh.visible = true
 
         this.mesh.scale.setScalar(10)
         // this.mesh.position.y = 0.75
@@ -131,7 +125,7 @@ export class Nipple
 
     setCoordinates(x, y, z, angle)
     {
-        const clampedY = Math.max(0.1, y - 0.25)
+        const clampedY = clamp(y - 0.25, 0.1, 0.65)
         this.position.set(x, clampedY, z)
         this.group.position.copy(this.position)
         this.uniforms.position.value.copy(this.position)
@@ -142,6 +136,8 @@ export class Nipple
 
     setPointerTesting()
     {
+        let isIn = false
+        
         this.game.inputs.addActions([
             { name: 'rayPointer', categories: [ 'playing' ], keys: [ 'Pointer.any' ] },
         ])
@@ -152,14 +148,15 @@ export class Nipple
             if(action.trigger === 'start')
             {
                 this.active = true
-                this.mesh.visible = true
             }
 
             // End
             else if(action.trigger === 'end')
             {
                 this.active = false
-                this.mesh.visible = false
+
+                if(isIn)
+                    this.events.trigger('tap')
             }
 
             // Change
@@ -187,14 +184,57 @@ export class Nipple
                     // Progress
                     this.progress = clamp((distance - this.progressRadiusLow) / (this.progressRadiusHigh - this.progressRadiusLow), 0, 1)
                     this.uniforms.progress.value = this.progress
+
+                    // Tap
+                    if(action.trigger === 'start')
+                    {
+                        if(this.progress === 0)
+                            isIn = true
+                    }
+                    else if(action.trigger === 'change')
+                    {
+                        if(this.progress > 0)
+                            isIn = false
+                    }
                 }
             }
         })
     }
 
+    jump()
+    {
+        this.animated = true
+        
+        gsap.to(
+            this.mesh.position,
+            {
+                y: 1,
+                duration: 0.1,
+                ease: 'power2.out',
+                overwrite: true,
+                onComplete: () =>
+                {
+                    gsap.to(
+                        this.mesh.position,
+                        {
+                            y: 0,
+                            duration: 0.6,
+                            ease: 'power4.inOut',
+                            overwrite: true,
+                            onComplete: () =>
+                            {
+                                this.animated = false
+                            }
+                        }
+                    )
+                }
+            }
+        )
+    }
+
     update()
     {
-        if(this.active)
+        if(this.active || this.animated)
         {
             // Smallest angle and forward
             this.smallestRotation = smallestAngle(this.rotation, this.targetRotation)
@@ -229,6 +269,15 @@ export class Nipple
 
             // Color multiplier
             this.uniforms.colorMultiplier.value = this.progress === 1 ? 1.5 : 1
+
+            // Group visiblity
+            this.group.visible = true
+        }
+
+        else
+        {
+            // Group visiblity
+            this.group.visible = false
         }
     }
 }

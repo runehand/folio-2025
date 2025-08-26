@@ -2,6 +2,7 @@ import { Game } from './Game.js'
 import gsap from 'gsap'
 import { smallestAngle } from './utilities/maths.js'
 import * as THREE from 'three/webgpu'
+import { Inputs } from './Inputs/Inputs.js'
 
 export class Player
 {
@@ -102,6 +103,31 @@ export class Player
         this.game.inputs.events.on('suspensionsFrontRight', suspensionsUpdate)
         this.game.inputs.events.on('suspensionsBackRight', suspensionsUpdate)
         this.game.inputs.events.on('suspensionsBackLeft', suspensionsUpdate)
+
+        this.game.inputs.events.on('suspensions', () =>
+        {
+            if(this.game.inputs.mode === Inputs.MODE_TOUCH)
+                this.game.nipple.jump()
+        })
+
+        // Nipple tap jump
+        let nippleJumpTimeout = null
+        this.game.nipple.events.on('tap', () =>
+        {
+            this.game.nipple.jump()
+
+            for(let i = 0; i < 4; i++)
+                this.suspensions[i] = 'high'
+
+            if(nippleJumpTimeout)
+                clearTimeout(nippleJumpTimeout)
+            
+            nippleJumpTimeout = setTimeout(() =>
+            {
+                for(let i = 0; i < 4; i++)
+                    this.suspensions[i] = 'low'
+            }, 200)
+        })
     }
 
     setUnstuck()
@@ -176,7 +202,6 @@ export class Player
                 this.state = Player.STATE_DEFAULT
             })
         })
-
     }
 
     updatePrePhysics()

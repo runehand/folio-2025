@@ -5,6 +5,7 @@ import { clamp, lerp, smoothstep } from './utilities/maths.js'
 import { mix, uniform, vec4, Fn, positionGeometry, attribute } from 'three/tsl'
 import gsap from 'gsap'
 import { Pointer } from './Inputs/Pointer.js'
+import { Inputs } from './Inputs/Inputs.js'
 
 CameraControls.install( { THREE: THREE } )
 
@@ -574,11 +575,11 @@ export class View
         }
 
         let newSmoothFocusPoint = null
-        if(this.game.inputs.pointer.mode === Pointer.MODE_TOUCH)
+        if(this.game.inputs.mode === Inputs.MODE_TOUCH)
             newSmoothFocusPoint = this.focusPoint.smoothedPosition.copy(this.focusPoint.position)
         else
             newSmoothFocusPoint = this.focusPoint.smoothedPosition.clone().lerp(this.focusPoint.position, this.game.ticker.delta * 10)
-        
+
         const smoothFocusPointDelta = newSmoothFocusPoint.clone().sub(this.focusPoint.smoothedPosition)
         const focusPointSpeed = Math.hypot(smoothFocusPointDelta.x, smoothFocusPointDelta.z) / this.game.ticker.delta
         this.focusPoint.smoothedPosition.copy(newSmoothFocusPoint)

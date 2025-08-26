@@ -61,7 +61,7 @@ export class Pointer
 
         this.element.addEventListener('touchmove', (_event) =>
         {
-            // _event.preventDefault()
+            _event.preventDefault()
 
             this.mode = Pointer.MODE_TOUCH
             this.upcomingTouches = [ ..._event.touches ]
@@ -84,7 +84,7 @@ export class Pointer
 
         this.element.addEventListener('touchstart', (_event) =>
         {
-            // _event.preventDefault()
+            _event.preventDefault()
 
             this.mode = Pointer.MODE_TOUCH
             this.upcomingDown = true
@@ -110,7 +110,7 @@ export class Pointer
 
         this.element.addEventListener('touchend', (_event) =>
         {
-            // _event.preventDefault()
+            _event.preventDefault()
 
             this.upcomingTouches = [ ..._event.touches ]
 
