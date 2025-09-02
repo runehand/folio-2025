@@ -40,7 +40,13 @@ export class Nipple
         this.group.visible = false
         this.game.scene.add(this.group)
 
-        const geometry = new THREE.PlaneGeometry(1, 1)
+        this.edgesThickness = 0.1
+        this.outlineThickness = 0.2
+        this.progressRadiusLow = 2
+        this.progressRadiusHigh = 4.5
+        this.forwardAmplitude = Math.PI * 1.5
+
+        const geometry = new THREE.RingGeometry(this.progressRadiusLow - this.edgesThickness - this.outlineThickness, this.progressRadiusHigh + this.edgesThickness + this.outlineThickness, 20, 1)
         geometry.rotateX(- Math.PI * 0.5)
 
         this.uniforms = {}
@@ -53,15 +59,9 @@ export class Nipple
         
         const material = new THREE.MeshBasicNodeMaterial({ transparent: true })
 
-        this.edgesThickness = 0.1
-        this.outlineThickness = 0.2
-        this.progressRadiusLow = 2
-        this.progressRadiusHigh = 4.5
-        this.forwardAmplitude = Math.PI * 1.5
-
         material.outputNode = Fn(() =>
         {
-            const radialCoord = vec2(positionGeometry.xz).mul(10)
+            const radialCoord = vec2(positionGeometry.xz)
             const radialAngle = atan(radialCoord.y, radialCoord.x)
 
             // Angle
@@ -117,8 +117,6 @@ export class Nipple
         })()
         
         this.mesh = new THREE.Mesh(geometry, material)
-
-        this.mesh.scale.setScalar(10)
 
         this.group.add(this.mesh)
     }
