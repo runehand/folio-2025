@@ -231,7 +231,7 @@ export class Gamepad
         // Didn't find gamepad
         if(gamepad === null)
             return
-    
+
         /**
          * Keys
          */
@@ -306,10 +306,12 @@ export class Gamepad
         /**
          * Type
          */
-        let type = 'playstation'
+        let type = 'default'
         
         if(/xbox/i.test(gamepad.id))
             type = 'xbox'
+        else if(/playstation|dualshock|dualsense|ps\d/i.test(gamepad.id))
+            type = 'playstation'
 
         if(type !== this.type)
         {
@@ -317,7 +319,7 @@ export class Gamepad
             this.type = type
             document.documentElement.classList.remove(`is-gamepad-${oldType}`)
             document.documentElement.classList.add(`is-gamepad-${this.type}`)
+            this.events.trigger('typeChange', [ this.type ])
         }
-        
     }
 }

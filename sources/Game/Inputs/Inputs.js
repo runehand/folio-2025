@@ -38,6 +38,8 @@ export class Inputs
         {
             this.update()
         }, 0)
+        
+        document.documentElement.classList.add(`is-mode-mouse-keyboard`)
     }
 
     setKeyboard()
@@ -277,12 +279,23 @@ export class Inputs
         if(mode === this.mode)
             return
 
+        const oldMode = this.mode
         this.mode = mode
         
         if(this.mode === Inputs.MODE_TOUCH)
             this.interactiveButtons.activate()
         else
             this.interactiveButtons.deactivate()
+
+        const modeClasses = [
+            null,
+            'mouse-keyboard',
+            'gamepad',
+            'touch'
+        ]
+
+        document.documentElement.classList.remove(`is-mode-${modeClasses[oldMode]}`)
+        document.documentElement.classList.add(`is-mode-${modeClasses[this.mode]}`)
 
         this.events.trigger('modeChange', [this.mode])
     }

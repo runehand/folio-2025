@@ -171,11 +171,32 @@ export class InteractivePoints
         key.visible = false
         group.add(key)
 
+
+        this.game.inputs.gamepad.events.on('typeChange', () =>
+        {
+            if(this.game.inputs.mode === Inputs.MODE_GAMEPAD)
+            {
+                let keyIconTexture = this.game.resources.interactivePointsKeyIconCircleTexture
+                
+                if(this.game.inputs.gamepad.type === 'xbox')
+                     keyIconTexture = this.game.resources.interactivePointsKeyIconBTexture
+
+                keyMaterial.outputNode = keyOutput(texture(keyIconTexture, uv()))
+                keyMaterial.needsUpdate = true
+                group.add(key)
+            }
+        })
+
         this.game.inputs.events.on('modeChange', () =>
         {
             if(this.game.inputs.mode === Inputs.MODE_GAMEPAD)
             {
-                keyMaterial.outputNode = keyOutput(texture(this.game.resources.interactivePointsKeyIconCircleTexture, uv()))
+                let keyIconTexture = this.game.resources.interactivePointsKeyIconCircleTexture
+                
+                if(this.game.inputs.gamepad.type === 'xbox')
+                     keyIconTexture = this.game.resources.interactivePointsKeyIconBTexture
+
+                keyMaterial.outputNode = keyOutput(texture(keyIconTexture, uv()))
                 keyMaterial.needsUpdate = true
                 group.add(key)
             }
