@@ -90,9 +90,6 @@ export class Trees
             this.debugPanel.addBinding(this.leaves.material.threshold, 'value', { label: 'threshold', min: 0, max: 1, step: 0.001 })
             this.debugPanel.addBinding(this.leaves.material.seeThroughEdgeMin, 'value', { label: 'seeThroughEdgeMin', min: 0, max: 1, step: 0.001 })
             this.debugPanel.addBinding(this.leaves.material.seeThroughEdgeMax, 'value', { label: 'seeThroughEdgeMax', min: 0, max: 1, step: 0.001 })
-            this.debugPanel.addBinding(this.leaves.material.seeThroughTresholdAmplitude, 'value', { label: 'seeThroughTresholdAmplitude', min: 0, max: 1, step: 0.001 })
-            this.debugPanel.addBinding(this.leaves.material.seeThroughNoiseFrequency, 'value', { label: 'seeThroughNoiseFrequency', min: 0, max: 1, step: 0.001 })
-            this.debugPanel.addBinding(this.leaves.material.seeThroughNoiseStrength, 'value', { label: 'seeThroughNoiseStrength', min: 0, max: 1, step: 0.001 })
         }
     }
 
