@@ -1,7 +1,7 @@
 import * as THREE from 'three/webgpu'
 import CameraControls from 'camera-controls'
 import { Game } from './Game.js'
-import { clamp, lerp, smoothstep } from './utilities/maths.js'
+import { clamp, lerp, remap, smoothstep } from './utilities/maths.js'
 import { mix, uniform, vec4, Fn, positionGeometry, attribute } from 'three/tsl'
 import gsap from 'gsap'
 import { Pointer } from './Inputs/Pointer.js'
@@ -114,6 +114,8 @@ export class View
         this.focusPoint.isTracking = true
         this.focusPoint.position = new THREE.Vector3()
         this.focusPoint.smoothedPosition = new THREE.Vector3()
+        this.focusPoint.isEased = true
+        this.focusPoint.easing = 1
 
         const focusActionsNames = [
             'forward',
@@ -591,11 +593,26 @@ export class View
             this.focusPoint.position.z = this.focusPoint.trackedPosition.z
         }
 
-        let newSmoothFocusPoint = null
-        if(this.game.inputs.mode === Inputs.MODE_TOUCH)
-            newSmoothFocusPoint = this.focusPoint.smoothedPosition.copy(this.focusPoint.position)
+        const easing = remap(this.focusPoint.easing, 0, 1, 1, this.game.ticker.delta * 10)
+        
+        const newSmoothFocusPoint = this.focusPoint.smoothedPosition.clone().lerp(this.focusPoint.position, easing)
+
+        if(this.game.inputs.mode === Inputs.MODE_TOUCH && this.focusPoint.isTracking)
+        {
+            if(this.focusPoint.isEased)
+            {
+                this.focusPoint.isEased = false
+                gsap.to(this.focusPoint, { overwrite: true, easing: 0, duration: 1.5, ease: 'power4.out' })
+            }
+        }
         else
-            newSmoothFocusPoint = this.focusPoint.smoothedPosition.clone().lerp(this.focusPoint.position, this.game.ticker.delta * 10)
+        {
+            if(!this.focusPoint.isEased)
+            {
+                this.focusPoint.isEased = true
+                gsap.to(this.focusPoint, { overwrite: true, easing: 1, duration: 1.5, ease: 'power4.out' })
+            }
+        }
 
         const smoothFocusPointDelta = newSmoothFocusPoint.clone().sub(this.focusPoint.smoothedPosition)
         const focusPointSpeed = Math.hypot(smoothFocusPointDelta.x, smoothFocusPointDelta.z) / this.game.ticker.delta

@@ -137,7 +137,7 @@ export class Inputs
             if(this.mode !== Inputs.MODE_TOUCH)
                 return
 
-            this.nipple.updateFromPointer(this.pointer.current.x, this.pointer.current.y, action.trigger)
+            this.nipple.updateFromPointer(this.pointer, action)
         })
     }
 

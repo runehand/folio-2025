@@ -127,16 +127,17 @@ export class Nipple
         this.mesh.rotation.y = - angle
     }
 
-    updateFromPointer(x, y, action)
+    updateFromPointer(pointer, action)
     {
         // Start
-        if(action === 'start')
+        if(action.trigger === 'start')
         {
-            this.active = true
+            if(pointer.touches.length == 1)
+                this.active = true
         }
 
         // End
-        else if(action === 'end')
+        else if(action.trigger === 'end')
         {
             this.active = false
 
@@ -147,41 +148,50 @@ export class Nipple
         }
 
         // Change
-        if(action === 'start' || action === 'change')
+        if(action.trigger === 'start' || action.trigger === 'change')
         {
             if(this.active)
             {
-                // Intersect
-                const ndcPointer = new THREE.Vector2(
-                    (x / this.game.viewport.width) * 2 - 1,
-                    - ((y / this.game.viewport.height) * 2 - 1),
-                )
-                this.raycaster.setFromCamera(ndcPointer, this.game.view.defaultCamera)
-
-                const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), - this.position.y)
-                const intersect = new THREE.Vector3()
-                this.raycaster.ray.intersectPlane(plane, intersect)
-
-                // Distance
-                const distance = this.position.distanceTo(intersect)
-
-                // Target angle
-                this.targetAngle = Math.atan2(intersect.z - this.position.z, intersect.x - this.position.x)
-
-                // Progress
-                this.progress = clamp((distance - this.progressRadiusLow) / (this.progressRadiusHigh - this.progressRadiusLow), 0, 1)
-                this.uniforms.progress.value = this.progress
-
-                // Tap
-                if(action === 'start')
+                // One finger => Handle it
+                if(pointer.touches.length == 1)
                 {
-                    if(this.progress === 0)
-                        this.inRadiusLow = true
+                    // Intersect
+                    const ndcPointer = new THREE.Vector2(
+                        (pointer.current.x / this.game.viewport.width) * 2 - 1,
+                        - ((pointer.current.y / this.game.viewport.height) * 2 - 1),
+                    )
+                    this.raycaster.setFromCamera(ndcPointer, this.game.view.defaultCamera)
+
+                    const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), - this.position.y)
+                    const intersect = new THREE.Vector3()
+                    this.raycaster.ray.intersectPlane(plane, intersect)
+
+                    // Distance
+                    const distance = this.position.distanceTo(intersect)
+
+                    // Target angle
+                    this.targetAngle = Math.atan2(intersect.z - this.position.z, intersect.x - this.position.x)
+
+                    // Progress
+                    this.progress = clamp((distance - this.progressRadiusLow) / (this.progressRadiusHigh - this.progressRadiusLow), 0, 1)
+                    this.uniforms.progress.value = this.progress
+
+                    // Tap
+                    if(action.trigger === 'start')
+                    {
+                        if(this.progress === 0)
+                            this.inRadiusLow = true
+                    }
+                    else if(action.trigger === 'change')
+                    {
+                        if(this.progress > 0)
+                            this.inRadiusLow = false
+                    }
                 }
-                else if(action === 'change')
+                // More than one finger => End
+                else
                 {
-                    if(this.progress > 0)
-                        this.inRadiusLow = false
+                    this.active = false
                 }
             }
         }

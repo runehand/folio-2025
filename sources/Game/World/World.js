@@ -34,7 +34,7 @@ export class World
         this.snow = new Snow()
         this.whispers = new Whispers()
         this.tornado = new Tornado()
-        this.scenery = new Scenery()
+        // this.scenery = new Scenery()
 
         // this.easter = new Easter()
 
