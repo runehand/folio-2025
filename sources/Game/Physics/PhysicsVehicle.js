@@ -14,7 +14,7 @@ export class PhysicsVehicle
         this.steeringAmplitude = 0.5
         this.engineForceAmplitude = 300
         this.boostMultiplier = 2
-        this.maxSpeed = 5
+        this.maxSpeed = 20
         this.brakeAmplitude = 35
         this.idleBrake = 0.06
         this.reverseBrake = 0.4
@@ -28,7 +28,6 @@ export class PhysicsVehicle
         this.velocity = new THREE.Vector3()
         this.direction = this.forward.clone()
         this.speed = 0
-        this.absoluteSpeed = 0
         this.suspensionsHeights = {
             low: 0.88,
             mid: 1.23,
@@ -202,7 +201,7 @@ export class PhysicsVehicle
         this.stop.test = () =>
         {
 
-            if(this.absoluteSpeed < this.stop.lowThreshold)
+            if(this.speed < this.stop.lowThreshold)
             {
                 if(!this.stop.active)
                 {
@@ -210,7 +209,7 @@ export class PhysicsVehicle
                     this.events.trigger('stop')
                 }
             }
-            else if(this.absoluteSpeed > this.stop.highThreshold)
+            else if(this.speed > this.stop.highThreshold)
             {
                 if(this.stop.active)
                 {
@@ -352,7 +351,7 @@ export class PhysicsVehicle
     {
         // Engine force
         const maxSpeed = this.maxSpeed + (this.maxSpeed * (this.boostMultiplier - 1) * this.game.player.boosting)
-        const overflowSpeed = Math.max(0, this.absoluteSpeed - maxSpeed)
+        const overflowSpeed = Math.max(0, this.speed - maxSpeed)
         let engineForce = (this.game.player.accelerating * (1 + this.game.player.boosting * this.boostMultiplier)) * this.engineForceAmplitude / (1 + overflowSpeed) * this.game.ticker.deltaScaled
 
         // Brake
@@ -360,20 +359,17 @@ export class PhysicsVehicle
 
         if(!this.game.player.braking && Math.abs(this.game.player.accelerating) < 0.1)
             brake = this.idleBrake
-        
-        if(this.absoluteSpeed > 0.5)
-        {
-            if(
-                this.absoluteSpeed > 0.5 &&
-                (
-                    (this.game.player.accelerating > 0 && !this.goingForward) ||
-                    (this.game.player.accelerating < 0 && this.goingForward)
-                )
+    
+        if(
+            this.speed > 0.5 &&
+            (
+                (this.game.player.accelerating > 0 && !this.goingForward) ||
+                (this.game.player.accelerating < 0 && this.goingForward)
             )
-            {
-                brake = this.reverseBrake
-                engineForce = 0
-            }
+        )
+        {
+            brake = this.reverseBrake
+            engineForce = 0
         }
 
         brake *= this.brakeAmplitude * this.game.ticker.deltaScaled
@@ -408,10 +404,13 @@ export class PhysicsVehicle
         this.sideward.set(0, 0, 1).applyQuaternion(this.quaternion)
         this.upward.set(0, 1, 0).applyQuaternion(this.quaternion)
         this.forward.set(1, 0, 0).applyQuaternion(this.quaternion)
-        this.speed = this.controller.currentVehicleSpeed()
-        this.absoluteSpeed = Math.abs(this.speed)
-        this.goingForward = this.direction.dot(this.forward) > 0.5
-        
+        // this.speed = this.controller.currentVehicleSpeed()
+        this.speed = this.velocity.length() / this.game.ticker.delta
+        this.xzSpeed = Math.hypot(this.velocity.x, this.velocity.z) / this.game.ticker.delta
+        this.forwardRatio = this.direction.dot(this.forward)
+        this.goingForward = this.forwardRatio > 0.5
+        this.forwardSpeed = this.speed * this.forwardRatio
+
         if(Math.abs(this.game.player.accelerating) > 0.5)
             this.stuck.accumulate(this.velocity.length(), this.game.ticker.deltaScaled)
 

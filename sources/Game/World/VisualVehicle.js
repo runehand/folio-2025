@@ -236,6 +236,8 @@ export class VisualVehicle
         // Wheels
         this.wheels.steering += ((this.game.player.steering * physicalVehicle.steeringAmplitude) - this.wheels.steering) * this.game.ticker.deltaScaled * 16
 
+        const wheelsRotation = (physicalVehicle.forwardSpeed) / physicalVehicle.wheels.settings.radius * 0.006
+
         for(let i = 0; i < 4; i++)
         {
             const visualWheel = this.wheels.items[i]
@@ -245,13 +247,10 @@ export class VisualVehicle
 
             if(!this.game.inputs.actions.get('brake').active || this.game.inputs.actions.get('forward').active || this.game.inputs.actions.get('backward').active)
             {
-                if(!physicalVehicle.stop.active)
-                {
-                    if(i === 0 || i === 2)
-                        visualWheel.cylinder.rotation.z += (physicalVehicle.speed * this.game.ticker.deltaScaled) / physicalVehicle.wheels.settings.radius
-                    else
-                        visualWheel.cylinder.rotation.z -= (physicalVehicle.speed * this.game.ticker.deltaScaled) / physicalVehicle.wheels.settings.radius
-                }
+                if(i === 0 || i === 2)
+                    visualWheel.cylinder.rotation.z += wheelsRotation
+                else
+                    visualWheel.cylinder.rotation.z -= wheelsRotation
             }
 
             if(i === 0)
