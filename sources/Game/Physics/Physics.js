@@ -25,6 +25,12 @@ export class Physics
             object: (this.groups.all | this.groups.object) << 16 | (this.groups.all | this.groups.bumper),
             bumper: (this.groups.bumper) << 16 | this.groups.object,
         }
+        this.frictionRules = {
+            average: RAPIER.CoefficientCombineRule.Average,
+            min: RAPIER.CoefficientCombineRule.Min,
+            max: RAPIER.CoefficientCombineRule.Max,
+            multiply: RAPIER.CoefficientCombineRule.Multiply,
+        }
 
         // this.world.integrationParameters.numSolverIterations = 4 // 4
         // this.world.numAdditionalFrictionIterations = 0 // 0
@@ -83,6 +89,16 @@ export class Physics
             physical.type = 'fixed'
             rigidBodyDesc = rigidBodyDesc.fixed()
         }
+        else if(_physicalDescription.type === 'kinematicPositionBased')
+        {
+            physical.type = 'kinematicPositionBased'
+            rigidBodyDesc = rigidBodyDesc.kinematicPositionBased()
+        }
+        else if(_physicalDescription.type === 'kinematicVelocityBased')
+        {
+            physical.type = 'kinematicVelocityBased'
+            rigidBodyDesc = rigidBodyDesc.kinematicVelocityBased()
+        }
 
         if(typeof _physicalDescription.position !== 'undefined')
             rigidBodyDesc.setTranslation(_physicalDescription.position.x, _physicalDescription.position.y, _physicalDescription.position.z)
@@ -139,6 +155,11 @@ export class Physics
 
             if(typeof _physicalDescription.friction !== 'undefined')
                 colliderDescription = colliderDescription.setFriction(_physicalDescription.friction)
+
+            if(typeof _physicalDescription.frictionRule !== 'undefined')
+            {
+                colliderDescription = colliderDescription.setFrictionCombineRule(this.frictionRules[_physicalDescription.frictionRule])
+            }
                 
             if(typeof _physicalDescription.restitution !== 'undefined')
                 colliderDescription = colliderDescription.setRestitution(_physicalDescription.restitution)

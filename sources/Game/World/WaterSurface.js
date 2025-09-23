@@ -1,7 +1,7 @@
 import * as THREE from 'three/webgpu'
 import { Game } from '../Game.js'
 import { blendOverlay, color, float, Fn, hash, linearDepth, max, mix, output, positionGeometry, positionLocal, positionWorld, screenUV, select, sin, smoothstep, step, texture, uniform, uv, vec2, vec3, vec4, viewportLinearDepth, viewportSharedTexture } from 'three/tsl'
-import { remap, remapClamp } from '../utilities/maths.js'
+import { lerp, remap, remapClamp } from '../utilities/maths.js'
 import { hashBlur } from 'three/examples/jsm/tsl/display/hashBlur.js'
 import { MeshDefaultMaterial } from '../Materials/MeshDefaultMaterial.js'
 import { boxBlur } from 'three/examples/jsm/tsl/display/boxBlur.js'
@@ -54,6 +54,7 @@ export class WaterSurface
         this.setNodes()
         this.setMaterial()
         this.setMesh()
+        this.setIce()
 
         this.game.ticker.events.on('tick', () =>
         {
@@ -355,6 +356,23 @@ export class WaterSurface
         }, 2)
     }
 
+    setIce()
+    {
+        this.ice = {}
+
+        this.ice.halfThickness = 0.5
+        this.ice.physical = this.game.physics.getPhysical({
+            type: 'kinematicPositionBased',
+            position: new THREE.Vector3(0, this.game.water.elevation - this.ice.halfThickness, 0),
+            frictionRule: 'min',
+            friction: 0.02,
+            colliders:
+            [
+                { shape: 'cuboid', parameters: [ 256, this.ice.halfThickness, 256 ] },
+            ]
+        })
+    }
+
     update()
     {
         // Apply weather
@@ -362,10 +380,12 @@ export class WaterSurface
         this.iceRatioBinding.update()
         this.splashesRatioBinding.update()
 
+        // Mesh
         this.mesh.position.x = this.game.view.optimalArea.position.x
         this.mesh.position.z = this.game.view.optimalArea.position.z
         this.mesh.renderOrder = 1
 
+        // Material
         const hasRipples = this.ripplesRatio.value > 0.0001
         const hasIce = this.iceRatio.value > 0.0001
         const hasSplashes = this.splashesRatio.value > 0.0001
@@ -382,5 +402,10 @@ export class WaterSurface
             
             this.setMaterial()
         }
+
+        // Ice
+        const friction = lerp(0.5, 0.02, this.iceRatio.value)
+        this.ice.physical.body.collider(0).setFriction(friction)
+        this.ice.physical.body.setNextKinematicTranslation({ x: 0, y: lerp(- 2 - this.ice.halfThickness, this.game.water.elevation - this.ice.halfThickness, this.iceRatio.value), z: 0})
     }
 }

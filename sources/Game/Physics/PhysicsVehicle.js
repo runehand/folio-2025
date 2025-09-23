@@ -1,7 +1,7 @@
 import * as THREE from 'three/webgpu'
 import { Game } from '../Game.js'
 import { Events } from '../Events.js'
-import { remap, remapClamp } from '../utilities/maths.js'
+import { lerp, remap, remapClamp } from '../utilities/maths.js'
 
 export class PhysicsVehicle
 {
@@ -387,6 +387,17 @@ export class PhysicsVehicle
             this.controller.setWheelEngineForce(i, engineForce)
             this.controller.setWheelSuspensionRestLength(i, this.suspensionsHeights[this.game.player.suspensions[i]])
             this.controller.setWheelSuspensionStiffness(i, this.suspensionsStiffness[this.game.player.suspensions[i]])
+
+            // Ice slip
+            const groundObject = this.controller.wheelGroundObject(i)
+
+            if(groundObject)
+            {
+                const onIce = groundObject.parent() === this.game.world.waterSurface?.ice.physical.body
+                const iceFriction = lerp(this.wheels.settings.frictionSlip, 0.04, this.game.world.waterSurface.iceRatio.value)
+
+                this.controller.setWheelFrictionSlip(i, onIce ? iceFriction : this.wheels.settings.frictionSlip)
+            }
         }
 
         // Update controller
