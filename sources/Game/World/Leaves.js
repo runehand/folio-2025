@@ -1,6 +1,6 @@
 import * as THREE from 'three/webgpu'
 import { Game } from '../Game.js'
-import { float, Fn, hash, instancedArray, instanceIndex, materialNormal, max, mod, modelViewMatrix, normalWorld, positionGeometry, remapClamp, rotateUV, sin, smoothstep, step, texture, uniform, vec2, vec3, vec4 } from 'three/tsl'
+import { color, float, Fn, hash, instancedArray, instanceIndex, materialNormal, max, mix, mod, modelViewMatrix, normalWorld, positionGeometry, remapClamp, rotateUV, sin, smoothstep, step, texture, uniform, vec2, vec3, vec4 } from 'three/tsl'
 import { remap } from '../utilities/maths.js'
 import gsap from 'gsap'
 import { MeshDefaultMaterial } from '../Materials/MeshDefaultMaterial.js'
@@ -94,15 +94,13 @@ export class Leaves
         const weightBuffer = instancedArray(weightArray, 'float')
 
         // Color buffer
-        const colorArray = new Float32Array(this.count * 3)
-        const colorA = new THREE.Color('#c4c557')
-        const colorB = new THREE.Color('#ff782b')
-        for(let i = 0; i < this.count; i++)
+        const colorA = uniform(color(0x999257))
+        const colorB = uniform(color(0xcc8214))
+        const colorNode = Fn(() =>
         {
-            const color = colorA.clone().lerp(colorB, Math.random())
-            color.toArray(colorArray, i * 3)
-        }
-        const colorBuffer = instancedArray(colorArray, 'vec3').toAttribute()
+            const mixStrength = hash(instanceIndex.add(99))
+            return vec3(mix(colorA, colorB, mixStrength))
+        })()
 
         // Normal buffer
         const normalArray = new Float32Array(this.count * 3)
@@ -117,10 +115,13 @@ export class Leaves
 
         this.material = new MeshDefaultMaterial({
             side: THREE.DoubleSide,
-            colorNode: colorBuffer,
+            colorNode: colorNode,
             normalNode: normalWorld,
             hasWater: false,
         })
+
+        // Shadow
+        this.material.castShadowNode = vec4(0.5, 1, 1, 1)
 
         // Position
         this.material.positionNode = Fn(() =>
@@ -257,6 +258,9 @@ export class Leaves
         // Debug
         if(this.game.debug.active)
         {
+            this.game.debug.addThreeColorBinding(this.debugPanel, colorA.value, 'colorA')
+            this.game.debug.addThreeColorBinding(this.debugPanel, colorB.value, 'colorB')
+            this.debugPanel.addBinding(this.scale, 'value', { label: 'scale', min: 0, max: 1, step: 0.001 })
             this.debugPanel.addBinding(this.scale, 'value', { label: 'scale', min: 0, max: 1, step: 0.001 })
             this.debugPanel.addBinding(this.rotationFrequency, 'value', { label: 'rotationFrequency', min: 0, max: 20, step: 0.001 })
             this.debugPanel.addBinding(this.rotationElevationMultiplier, 'value', { label: 'rotationElevationMultiplier', min: 0, max: 2, step: 0.001 })
