@@ -22,6 +22,7 @@ export class Bowling
                 expanded: true,
             })
         }
+        this.won = false
 
         this.setPins()
         this.setBall()
@@ -52,8 +53,8 @@ export class Bowling
 
             },
             {
-                friction: 0.8,
-                restitution: 0.3,
+                friction: 1,
+                restitution: 1,
             }
         )
 
@@ -120,6 +121,8 @@ export class Bowling
         {
             for(const pin of this.pins.items)
             {
+                pin.isDown = false
+                
                 pin.body.setTranslation(pin.basePosition)
                 pin.body.setRotation(pin.baseRotation)
                 pin.body.resetForces()
@@ -162,8 +165,11 @@ export class Bowling
             InteractivePoints.ALIGN_RIGHT,
             () =>
             {
+                this.won = false
+
                 this.pins.reset()
                 this.ball.reset()
+                this.screen.reset()
 
                 requestAnimationFrame(() =>
                 {
@@ -250,6 +256,16 @@ export class Bowling
         this.screen.crossesMesh.material = crossesMaterial
         this.screen.circlesMesh.material = circlesMaterial
 
+        // Reset
+        this.screen.reset = () =>
+        {
+            for(const pin of this.pins.items)
+            {
+                this.dataTexture.source.data.data[pin.index] = 0
+                this.dataTexture.needsUpdate = true
+            }
+        }
+
         // Debug
         if(this.game.debug.active)
         {
@@ -301,8 +317,6 @@ export class Bowling
                 }
             )
         }
-
-        // this.bumpers.toggle()
 
         // Interactive point
         this.game.interactivePoints.create(
@@ -371,18 +385,21 @@ export class Bowling
         this.screen.object.needsUpdate = true
 
         // Pins
+        let pinStateChanged = false
         for(const pin of this.pins.items)
         {
             const pinUp = new THREE.Vector3(0, 1, 0)
             pinUp.applyQuaternion(pin.group.quaternion)
             const isDown = pinUp.y < 0.5
 
-            if(isDown !== pin.isDown)
+            // Wasn't down but is now down
+            if(isDown && pin.isDown === false)
             {
                 pin.isDown = isDown
+
+                pinStateChanged = true
                 
                 this.dataTexture.source.data.data[pin.index] = pin.isDown ? 128 : 0
-                this.dataTexture.needsUpdate = true
             }
 
             const isSleeping = pin.body.isSleeping()
@@ -392,6 +409,28 @@ export class Bowling
 
                 if(!pin.isSleeping)
                     showRestartInteractivePoint = true
+            }
+        }
+
+        if(pinStateChanged)
+        {
+            this.dataTexture.needsUpdate = true
+
+            // Haven't won since reset
+            if(!this.won)
+            {
+                const allDown = this.pins.items.reduce((accumulator, pin) => accumulator && pin.isDown, true)
+                if(allDown)
+                {
+                    this.won = true
+
+                    if(this.game.world.confetti)
+                    {
+                        this.game.world.confetti.pop(this.game.player.position.clone())
+                        this.game.world.confetti.pop(this.screen.group.position.clone().add(new THREE.Vector3(- 1, - 1, 0)))
+                        this.game.world.confetti.pop(this.screen.group.position.clone().add(new THREE.Vector3(- 3.4, - 1, 0)))
+                    }
+                }
             }
         }
 
