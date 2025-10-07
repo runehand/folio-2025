@@ -6,6 +6,9 @@ import gsap from 'gsap'
 import { Player } from '../Player.js'
 import { MeshDefaultMaterial } from '../Materials/MeshDefaultMaterial.js'
 import { color, Fn, max, PI, positionWorld, texture, uniform, uv, vec2, vec3, vec4 } from 'three/tsl'
+import { alea } from 'seedrandom'
+
+const rng = new alea('circuit')
 
 export default class Circuit
 {
@@ -36,6 +39,7 @@ export default class Circuit
         this.setTimer()
         this.setCheckpoints()
         this.setObjects()
+        this.setObstacles()
         this.setInteractivePoint()
         this.setStartAnimation()
 
@@ -122,6 +126,7 @@ export default class Circuit
 
         this.timer.visible = true
         this.timer.startTime = 0
+        this.timer.elapsedTime = 0
         this.timer.endTime = 0
         this.timer.running = false
         this.timer.group = this.references.get('timer')[0]
@@ -262,11 +267,11 @@ export default class Circuit
             if(this.timer.running)
             {
                 const currentTime = this.game.ticker.elapsed
-                const elapsedTime = currentTime - this.timer.startTime
+                this.timer.elapsedTime = currentTime - this.timer.startTime
 
-                const minutes = Math.floor(elapsedTime / 60)
-                const seconds = Math.floor((elapsedTime % 60))
-                const milliseconds = Math.floor((elapsedTime * 1000) % 1000)
+                const minutes = Math.floor(this.timer.elapsedTime / 60)
+                const seconds = Math.floor((this.timer.elapsedTime % 60))
+                const milliseconds = Math.floor((this.timer.elapsedTime * 1000) % 1000)
 
                 const digitsString = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}:${String(milliseconds).padStart(3, '0')}`
 
@@ -489,6 +494,27 @@ export default class Circuit
         }
     }
 
+    setObstacles()
+    {
+        this.obstacles = {}
+        this.obstacles.items = []
+        
+        const baseObstacles = this.references.get('obstacles')
+
+        let i = 0
+        for(const baseObstacle of baseObstacles)
+        {
+            const obstacle = {}
+            obstacle.object = baseObstacle.userData.object
+            obstacle.osciliationOffset = i
+            obstacle.basePosition = obstacle.object.visual.object3D.position.clone()
+
+            this.obstacles.items.push(obstacle)
+
+            i++
+        }
+    }
+
     setInteractivePoint()
     {
         this.interactivePoint = this.game.interactivePoints.create(
@@ -699,6 +725,18 @@ export default class Circuit
 
             if(intersections.length)
                 checkpoint.reach()
+        }
+
+        // Obstacles
+        for(const obstacle of this.obstacles.items)
+        {
+            // console.log(obstacle.object.physical.body)
+            const newPosition = obstacle.basePosition.clone()
+            const osciliation = Math.sin(this.timer.elapsedTime * 1.25 + obstacle.osciliationOffset) * 3.5
+            newPosition.z += osciliation
+            
+            obstacle.object.physical.body.setNextKinematicTranslation(newPosition)
+            obstacle.object.needsUpdate = true
         }
 
         // Timer
