@@ -65,18 +65,18 @@ export default class Circuit
         const mesh = this.references.get('road')[0]
         
         this.road.color = uniform(color('#383039'))
-        this.road.glitterPositionMultiplier = 0.3
-        this.road.glitterPositionDelta = uniform(0)
-        this.road.glitterScarcity = uniform(0.02)
-        this.road.glitterLighten = uniform(0.2)
-        this.road.middleLighten = uniform(0.075)
+        this.road.glitterScarcity = uniform(0.1)
+        this.road.glitterLighten = uniform(0.28)
+        this.road.middleLighten = uniform(0.1)
 
         const colorNode = Fn(() =>
         {
             const glitterUv = positionWorld.xz.mul(0.2)
             const glitter = texture(this.game.noises.hash, glitterUv).r
             
-            const glitterLighten = this.road.glitterPositionDelta.mul(this.road.glitterScarcity).sub(glitter.mul(12.34)).fract().sub(0.5).abs().remapClamp(0, this.road.glitterScarcity, 1, 0).mul(this.road.glitterLighten)
+            const glitterLighten = glitter.remap(this.road.glitterScarcity.oneMinus(), 1, 0, this.road.glitterLighten)
+
+            // return vec3(glitterLighten)
             
             const middleLighten = uv().y.mul(PI).sin().mul(this.road.middleLighten)
 
@@ -99,8 +99,8 @@ export default class Circuit
         {
             const debugPanel = this.debugPanel.addFolder({ title: 'road' })
             this.game.debug.addThreeColorBinding(debugPanel, this.road.color.value, 'color')
-            debugPanel.addBinding(this.road.glitterScarcity, 'value', { label: 'glitterScarcity', min: 0, max: 0.1, step: 0.001 })
-            debugPanel.addBinding(this.road.glitterLighten, 'value', { label: 'glitterLighten', min: 0, max: 0.2, step: 0.001 })
+            debugPanel.addBinding(this.road.glitterScarcity, 'value', { label: 'glitterScarcity', min: 0, max: 1, step: 0.001 })
+            debugPanel.addBinding(this.road.glitterLighten, 'value', { label: 'glitterLighten', min: 0, max: 1, step: 0.001 })
             debugPanel.addBinding(this.road.middleLighten, 'value', { label: 'middleLighten', min: 0, max: 0.2, step: 0.001 })
         }
     }
@@ -755,9 +755,6 @@ export default class Circuit
 
     update()
     {
-        // Road glitters
-        this.road.glitterPositionDelta.value = (this.game.view.camera.position.x + this.game.view.camera.position.z) * this.road.glitterPositionMultiplier
-
         // Checkpoints
         for(const checkpoint of this.checkpoints.items)
         {
