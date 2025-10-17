@@ -31,8 +31,8 @@ export class World
         this.game = Game.getInstance()
 
         this.visualVehicle = new VisualVehicle()
+        this.grid = new Grid()
         this.floor = new Floor()
-        // this.floor = new Grid()
         this.waterSurface = new WaterSurface()
         this.grass = new Grass()
         this.windLines = new WindLines()
@@ -93,24 +93,26 @@ export class World
 
     setTestMesh()
     {
+        console.log(this.game.rendering.renderer.library)
         const testMesh = new THREE.Mesh(
             new THREE.SphereGeometry(1, 32, 32),
-            new THREE.MeshBasicNodeMaterial()
+            new THREE.MeshBasicMaterial()
         )
-        testMesh.material.outputNode = Fn(() =>
-        {
-            return vec4(1, 0, 0, 1)
-        })()
-        setTimeout(() =>
-        {
+        // console.log(testMesh.material.outputNode = vec4(1, 0, 0, 1))
+        // testMesh.material.outputNode = Fn(() =>
+        // {
+        //     return vec4(1, 0, 0, 1)
+        // })()
+        // setTimeout(() =>
+        // {
 
-            testMesh.material.outputNode = Fn(() =>
-            {
-                return vec4(1, 1, 0, 1)
-            })()
-            testMesh.material.needsUpdate = true
-        }, 2000)
-        testMesh.receiveShadow = true
+        //     testMesh.material.outputNode = Fn(() =>
+        //     {
+        //         return vec4(1, 1, 0, 1)
+        //     })()
+        //     testMesh.material.needsUpdate = true
+        // }, 2000)
+        // testMesh.receiveShadow = true
         testMesh.position.z = 3
         this.game.scene.add(testMesh)
 

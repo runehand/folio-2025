@@ -27,11 +27,6 @@ export class Materials
         this.createEmissiveGradient('emissiveBlueRadialGradient', '#91f0ff', '#128fff', 1.7, true, this.debugPanel?.addFolder({ title: 'emissiveBlueRadialGradient' }))
         this.createEmissiveGradient('emissiveGreenRadialGradient', '#f8ffa6', '#74ff00', 1.5, true, this.debugPanel?.addFolder({ title: 'emissiveGreenRadialGradient' }))
         this.createEmissiveGradient('emissiveWhiteRadialGradient', '#ffffff', '#666666', 2.7, false, this.debugPanel?.addFolder({ title: 'emissiveWhiteRadialGradient' }))
-        this.createEmissive('emissiveOrange', '#ff3e00', 3, this.debugPanel?.addFolder({ title: 'emissiveOrange' }))
-        this.createEmissive('emissiveRed', '#ff3131', 3, this.debugPanel?.addFolder({ title: 'emissiveRed' }))
-        this.createEmissive('emissivePurple', '#a64dff', 3, this.debugPanel?.addFolder({ title: 'emissivePurple' }))
-        this.createEmissive('emissiveGreen', '#b2ff31', 3, this.debugPanel?.addFolder({ title: 'emissiveGreen' }))
-        this.createEmissive('emissiveBlue', '#3250ff', 3, this.debugPanel?.addFolder({ title: 'emissiveBlue' }))
         this.createGradient('carGradient', '#ff3a3a', '#721551', this.debugPanel?.addFolder({ title: 'carGradient' }))
     }
 
@@ -133,7 +128,15 @@ export class Materials
         if(normalize)
             mixedColor = mixedColor.div(luminance(mixedColor))
 
-        material.outputNode = vec4(mixedColor.mul(intensity), 1)
+        const outputNode = Fn(() =>
+        {
+            const outputColor = vec4(mixedColor.mul(intensity), 1)
+            outputColor.assign(MeshDefaultMaterial.revealDiscardNodeBuilder(this.game, outputColor))
+
+            return outputColor
+        })
+
+        material.outputNode = outputNode()
         material.fog = false
         this.save(_name, material)
 

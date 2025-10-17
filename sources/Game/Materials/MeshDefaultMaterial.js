@@ -1,10 +1,22 @@
 import * as THREE from 'three/webgpu'
 import { Game } from '../Game.js'
-import { color, float, frontFacing, If, max, mix, normalWorld, positionWorld, vec3, vec4 } from 'three/tsl'
-import { Fn } from 'three/src/nodes/TSL.js'
+import { Fn, color, float, frontFacing, If, max, mix, normalWorld, positionWorld, vec2, vec3, vec4 } from 'three/tsl'
 
 export class MeshDefaultMaterial extends THREE.MeshLambertNodeMaterial
 {
+    static revealDiscardNodeBuilder = (game, outputColor) =>
+    {
+        return Fn(([ outputColor ]) =>
+        {
+            const distanceToCenter = positionWorld.xz.sub(game.reveal.center).length()
+            distanceToCenter.greaterThan(game.reveal.distance).discard()
+
+            const revealMix = distanceToCenter.step(game.reveal.distance.sub(game.reveal.thickness))
+            const revealColor = game.reveal.color.mul(game.reveal.intensity)
+            return mix(outputColor.rgb, revealColor, revealMix)
+        })(outputColor)
+    }
+    
     constructor(parameters = {})
     {
         super()
@@ -23,6 +35,7 @@ export class MeshDefaultMaterial extends THREE.MeshLambertNodeMaterial
         this.hasLightBounce = parameters.hasLightBounce ?? true
         this.hasFog = parameters.hasFog ?? true
         this.hasWater = parameters.hasWater ?? true
+        this.hasReveal = parameters.hasReveal ?? true
 
         this._colorNode = parameters.colorNode ?? color(0xffffff)
         this._normalNode = parameters.normalNode ?? normalWorld
@@ -110,6 +123,10 @@ export class MeshDefaultMaterial extends THREE.MeshLambertNodeMaterial
 
             // Alpha test discard
             this._alphaNode.lessThan(this.alphaTest).discard()
+
+            // Reveal
+            if(this.hasReveal)
+                outputColor.assign(MeshDefaultMaterial.revealDiscardNodeBuilder(this.game, outputColor))
 
             // Output
             return vec4(outputColor, this._alphaNode)

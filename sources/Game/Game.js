@@ -38,6 +38,7 @@ import { Audio } from './Audio.js'
 import { ClosingManager } from './ClosingManager.js'
 import { RayCursor } from './RayCursor.js'
 import { Water } from './Water.js'
+import { Reveal } from './Reveal.js'
 
 export class Game
 {
@@ -70,7 +71,7 @@ export class Game
                 [ 'bricksReferencesModel',                 'bricks/bricksReferences.glb',                          'gltf'    ],
                 [ 'bricksVisualModel',                     'bricks/bricksVisual.glb',                              'gltf'    ],
                 [ 'cratesModel',                           'crates/crates.glb',                                    'gltf'    ],
-                [ 'terrainTexture',                        'terrain/terrain.png',                                  'texture' ],
+                [ 'terrainTexture',                        'terrain/terrain.png',                                  'texture', (resource) => { resource.flipY = false; } ],
                 // [ 'terrainTexture',                        'terrain/flatGrass.png',                                'texture' ],
                 [ 'terrainModel',                          'terrain/terrain.glb',                                  'gltf'    ],
                 [ 'birchTreesVisualModel',                 'birchTrees/birchTreesVisual.glb',                      'gltf'    ],
@@ -104,8 +105,6 @@ export class Game
             {
                 this.resources = resources
 
-                this.resources.terrainTexture.flipY = false
-
                 // Init
                 this.init()
             }
@@ -129,6 +128,7 @@ export class Game
         this.viewport = new Viewport(this.domElement)
         this.modals = new Modals()
         this.view = new View()
+        this.reveal = new Reveal()
         this.rendering = new Rendering(() =>
         {
             this.noises = new Noises()
@@ -159,6 +159,10 @@ export class Game
             // this.monitoring = new Monitoring()
 
             this.rendering.renderer.setAnimationLoop((elapsedTime) => { this.ticker.update(elapsedTime) })
+            setTimeout(() => 
+            {
+                this.reveal.expose()
+            }, 1000)
         })
     }
 }

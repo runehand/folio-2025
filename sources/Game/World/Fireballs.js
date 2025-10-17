@@ -1,7 +1,6 @@
 import * as THREE from 'three/webgpu'
 import { Game } from '../Game.js'
-import { Fn } from 'three/src/nodes/TSL.js'
-import { mix, positionGeometry, texture, vec3, vec4, normalGeometry, dot, max, min, mul, add, color, luminance, step, uniform, positionWorld } from 'three/tsl'
+import { Fn, mix, positionGeometry, texture, vec3, vec4, normalGeometry, dot, max, min, mul, add, color, luminance, step, uniform, positionWorld } from 'three/tsl'
 import gsap from 'gsap'
 
 export class Fireballs

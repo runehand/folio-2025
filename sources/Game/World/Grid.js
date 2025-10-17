@@ -1,8 +1,9 @@
 import * as THREE from 'three/webgpu'
 import { Game } from '../Game.js'
 import MeshGridMaterial, { MeshGridMaterialLine } from '../Materials/MeshGridMaterial.js'
-import { float, normalWorld, vec3, vec4 } from 'three/tsl'
+import { float, normalWorld, positionWorld, vec3, vec4 } from 'three/tsl'
 import { MeshDefaultMaterial } from '../Materials/MeshDefaultMaterial.js'
+import { Fn } from 'three/tsl'
 
 export class Grid
 {
@@ -23,7 +24,7 @@ export class Grid
         }
 
         this.setVisual()
-        this.setPhysical()
+        // this.setPhysical()
     }
 
     setVisual()
@@ -46,9 +47,18 @@ export class Grid
 
         const defaultMaterial = new MeshDefaultMaterial({
             colorNode: uvGridMaterial.outputNode.rgb,
-            hasWater: false
+            hasWater: false,
+            hasReveal: false
         })
-        uvGridMaterial.outputNode = defaultMaterial.outputNode
+        
+        uvGridMaterial.outputNode = Fn(() =>
+        {
+            const distanceToCenter = positionWorld.xz.sub(this.game.reveal.center).length()
+            distanceToCenter.lessThan(this.game.reveal.distance).discard()
+
+            return defaultMaterial.outputNode
+        })()
+        
 
         const ground = new THREE.Mesh(
             new THREE.PlaneGeometry(1000, 1000),
