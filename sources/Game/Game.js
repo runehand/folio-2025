@@ -113,7 +113,7 @@ export class Game
                 [ 'cratesModel',                           'crates/crates.glb',                                    'gltf'    ],
                 [ 'terrainTexture',                        'terrain/terrain.png',                                  'texture', (resource) => { resource.flipY = false; } ],
                 [ 'terrainModel',                          'terrain/terrain.glb',                                  'gltf'    ],
-                [ 'terrainSlabsTexture',                   'terrain/slabs.png',                                    'texture', (resource) => { resource.wrapS = THREE.RepeatWrapping; resource.wrapT = THREE.RepeatWrapping; resource.colorSpace = THREE.SRGBColorSpace } ],
+                [ 'floorSlabsTexture',                     'floor/slabs.png',                                      'texture', (resource) => { resource.wrapS = THREE.RepeatWrapping; resource.wrapT = THREE.RepeatWrapping; resource.minFilter = THREE.LinearFilter; resource.magFilter = THREE.LinearFilter; resource.generateMipmaps = false } ],
                 [ 'birchTreesVisualModel',                 'birchTrees/birchTreesVisual.glb',                      'gltf'    ],
                 [ 'birchTreesReferencesModel',             'birchTrees/birchTreesReferences.glb',                  'gltf'    ],
                 [ 'oakTreesVisualModel',                   'oakTrees/oakTreesVisual.glb',                          'gltf'    ],
