@@ -9,7 +9,8 @@ export class Terrain
     {
         this.game = Game.getInstance()
 
-        this.subdivision = 256
+        this.subdivision = 128
+        this.size = 192
 
         if(this.game.debug.active)
         {
@@ -86,7 +87,7 @@ export class Terrain
 
         const worldPositionToUvNode = Fn(([position]) =>
         {
-            return position.div(this.subdivision).add(0.5)
+            return position.div(this.subdivision).div(1.5).add(0.5)
         })
 
         this.terrainNode = Fn(([position]) =>

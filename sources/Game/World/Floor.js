@@ -121,7 +121,7 @@ export class Floor
         const totalCount = positionAttribute.count
         const rowsCount = Math.sqrt(totalCount)
         const heights = new Float32Array(totalCount)
-        const halfExtent = this.subdivision / 2
+        const halfExtent = this.game.terrain.size / 2
 
         for(let i = 0; i < totalCount; i++)
         {
@@ -142,7 +142,7 @@ export class Floor
                 friction: 0.2,
                 restitution: 0.15,
                 colliders: [
-                    { shape: 'heightfield', parameters: [ rowsCount - 1, rowsCount - 1, heights, { x: this.subdivision, y: 1, z: this.subdivision } ], category: 'floor' }
+                    { shape: 'heightfield', parameters: [ rowsCount - 1, rowsCount - 1, heights, { x: this.game.terrain.size, y: 1, z: this.game.terrain.size } ], category: 'floor' }
                 ]
             }
         )
