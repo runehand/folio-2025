@@ -65,6 +65,6 @@ export class LineGeometry extends THREE.BufferGeometry
         this.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
         this.setAttribute('direction', new THREE.Float32BufferAttribute(directions, 3))
         this.setAttribute('ratio', new THREE.Float32BufferAttribute(ratios, 1))
-        this.setIndex(new THREE.BufferAttribute(indices, 1))
+        this.setIndex(new THREE.Uint16BufferAttribute(indices, 1))
     }
 }

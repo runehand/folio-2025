@@ -14,7 +14,7 @@ export class Floor
         {
             this.debugPanel = this.game.debug.panel.addFolder({
                 title: '⏥ Floor',
-                expanded: true,
+                expanded: false,
             })
         }
         this.geometry = this.game.resources.terrainModel.scene.children[0].geometry

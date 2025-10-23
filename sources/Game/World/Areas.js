@@ -14,6 +14,7 @@ import { Toilet } from './Toilet.js'
 import { ExplosiveCrates } from './ExplosiveCrates.js'
 import { Bowling } from './Bowling.js'
 import Circuit from './Circuit.js'
+import { BehindTheScene } from './BehindTheScene.js'
 
 export class Areas
 {
@@ -31,6 +32,10 @@ export class Areas
 
         this.setReferences()
         this.setObjects()
+
+        const behindTheSceneReferences = this.references.getStartingWith('behindTheScene')
+        if(behindTheSceneReferences.size)
+            this.behindTheScene = new BehindTheScene(behindTheSceneReferences)
 
         const toiletReferences = this.references.getStartingWith('toilet')
         if(toiletReferences.size)

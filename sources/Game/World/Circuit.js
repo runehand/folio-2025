@@ -57,7 +57,7 @@ export default class Circuit
         {
             this.debugPanel = this.game.debug.panel.addFolder({
                 title: '🛞 Circuit',
-                expanded: true,
+                expanded: false,
             })
         }
 

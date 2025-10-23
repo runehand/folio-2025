@@ -157,7 +157,7 @@ export class RayCursor
                     {
                         this.isAnyIntersecting = isAnyIntersecting
                         
-                        this.game.domElement.style.cursor = this.isAnyIntersecting ? 'pointer' : 'default'
+                        this.game.canvasElement.style.cursor = this.isAnyIntersecting ? 'pointer' : 'default'
                     }
 
                     if(!isAnyIntersecting)

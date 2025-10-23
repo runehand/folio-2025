@@ -10,17 +10,6 @@ export class Intro
         this.references = references
 
         this.setInteractivePoint()
-
-        let firstTimeIntro = true
-
-        this.game.modals.items.get('intro').events.on('close', () =>
-        {
-            if(firstTimeIntro)
-                this.game.audio?.music.play()
-            
-            firstTimeIntro = false
-            this.interactivePoint.reveal()
-        })
     }
 
     setInteractivePoint()
@@ -49,5 +38,10 @@ export class Intro
                 this.game.inputs.interactiveButtons.removeItems(['interact'])
             }
         )
+
+        this.game.modals.items.get('intro').events.on('close', () =>
+        {
+            this.interactivePoint.reveal()
+        })
     }
 }
