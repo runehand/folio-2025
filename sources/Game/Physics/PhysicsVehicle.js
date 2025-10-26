@@ -1,7 +1,7 @@
 import * as THREE from 'three/webgpu'
 import { Game } from '../Game.js'
 import { Events } from '../Events.js'
-import { lerp, remap, remapClamp } from '../utilities/maths.js'
+import { lerp, remap, remapClamp, smallestAngle } from '../utilities/maths.js'
 
 export class PhysicsVehicle
 {
@@ -71,6 +71,8 @@ export class PhysicsVehicle
         this.setStop()
         this.setUpsideDown()
         this.setStuck()
+        this.setBackWheel()
+        this.setFlip()
 
         this.game.ticker.events.on('tick', () =>
         {
@@ -236,7 +238,7 @@ export class PhysicsVehicle
                 if(!this.upsideDown.active)
                 {
                     this.upsideDown.active = true
-                    this.events.trigger('upsideDown')
+                    this.events.trigger('upsideDown', [ this.upsideDown.ratio ])
                 }
             }
             else
@@ -304,6 +306,134 @@ export class PhysicsVehicle
         }
     }
 
+    setBackWheel()
+    {
+        this.backWheel = {}
+        this.backWheel.active = false
+        this.backWheel.test = () =>
+        {
+            if(
+                this.zRotation > 1 && this.zRotation < 1.7 &&
+                this.wheels.items[2].inContact && this.wheels.items[3].inContact
+            )
+            {
+                if(!this.backWheel.active)
+                {
+                    this.backWheel.active = true
+                    this.events.trigger('backWheel', [ this.backWheel.active ])
+                }
+            }
+            else
+            {
+                if(this.backWheel.active)
+                {
+                    this.backWheel.active = false
+                    this.events.trigger('backWheel', [ this.backWheel.active ])
+                }
+            }
+        }
+    }
+
+    setFlip()
+    {
+        this.flip = {}
+        let inAir = false
+        
+        let previousXAngle = 0
+        let accumulatedXAngle = 0
+
+        let previousZAngle = 0
+        let accumulatedZAngle = 0
+
+        this.flip.test = () =>
+        {
+            let inContactCount = 0
+            for(const wheel of this.wheels.items)
+                inContactCount += wheel.inContact ? 1 : 0
+            
+            // Every wheel stop touching
+            if(inContactCount === 0)
+            {
+                // Wasn't in the air => Start
+                if(!inAir)
+                {
+                    inAir = true
+                    
+                    previousXAngle = this.xRotation
+                    accumulatedXAngle = 0
+                    
+                    previousZAngle = this.zRotation
+                    accumulatedZAngle = 0
+                }
+            }
+
+            // 4 wheels are touching
+            if(inContactCount >= 4)
+            {
+                // Was in the air => stop
+                if(inAir)
+                {
+                    inAir = false
+
+                    if(
+                        Math.abs(accumulatedXAngle) < 1 &&
+                        Math.abs(accumulatedZAngle) > 5
+                    )
+                    {
+                        this.events.trigger('flip', [ Math.sign(accumulatedZAngle) ])
+                    }
+                }
+            }
+            else
+            {
+                if(inAir)
+                {
+                    accumulatedXAngle += smallestAngle(previousXAngle, this.xRotation)
+                    previousXAngle = this.xRotation
+
+                    accumulatedZAngle += smallestAngle(previousZAngle, this.zRotation)
+                    previousZAngle = this.zRotation
+                }
+            }
+        }
+
+        this.flip.jump = () =>
+        {
+            accumulatedXAngle = 0
+            accumulatedZAngle = 0
+
+            const up = new THREE.Vector3(0, 1, 0)
+            const sidewardDot = up.dot(this.sideward)
+            const forwardDot = up.dot(this.forward)
+            const upwarddDot = up.dot(this.upward)
+            
+            const sidewardAbsolute = Math.abs(sidewardDot)
+            const forwardAbsolute = Math.abs(forwardDot)
+            const upwarddAbsolute = Math.abs(upwarddDot)
+
+            const impulse = new THREE.Vector3(0, 1, 0).multiplyScalar(this.flipForce * this.chassis.mass)
+            this.chassis.physical.body.applyImpulse(impulse)
+
+            // Upside down
+            if(upwarddAbsolute > sidewardAbsolute && upwarddAbsolute > forwardAbsolute)
+            {
+                const torqueX = 0.8 * this.chassis.mass
+                const torque = new THREE.Vector3(torqueX, 0, 0)
+                torque.applyQuaternion(this.chassis.physical.body.rotation())
+                this.chassis.physical.body.applyTorqueImpulse(torque)
+            }
+            // On the side
+            else
+            {
+                const torqueX = sidewardDot * 0.4 * this.chassis.mass
+                const torqueZ = - forwardDot * 0.8 * this.chassis.mass
+                const torque = new THREE.Vector3(torqueX, 0, torqueZ)
+                torque.applyQuaternion(this.chassis.physical.body.rotation())
+                this.chassis.physical.body.applyTorqueImpulse(torque)
+            }
+        }
+    }
+
     moveTo(position, rotation = 0)
     {
         const quaternion = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rotation)
@@ -312,40 +442,6 @@ export class PhysicsVehicle
         this.chassis.physical.body.setLinvel({ x: 0, y: 0, z: 0 })
         this.chassis.physical.body.setAngvel({ x: 0, y: 0, z: 0 })
     }
-
-    flip()
-    {
-        const up = new THREE.Vector3(0, 1, 0)
-        const sidewardDot = up.dot(this.sideward)
-        const forwardDot = up.dot(this.forward)
-        const upwarddDot = up.dot(this.upward)
-        
-        const sidewardAbsolute = Math.abs(sidewardDot)
-        const forwardAbsolute = Math.abs(forwardDot)
-        const upwarddAbsolute = Math.abs(upwarddDot)
-
-        const impulse = new THREE.Vector3(0, 1, 0).multiplyScalar(this.flipForce * this.chassis.mass)
-        this.chassis.physical.body.applyImpulse(impulse)
-
-        // Upside down
-        if(upwarddAbsolute > sidewardAbsolute && upwarddAbsolute > forwardAbsolute)
-        {
-            const torqueX = 0.8 * this.chassis.mass
-            const torque = new THREE.Vector3(torqueX, 0, 0)
-            torque.applyQuaternion(this.chassis.physical.body.rotation())
-            this.chassis.physical.body.applyTorqueImpulse(torque)
-        }
-        // On the side
-        else
-        {
-            const torqueX = sidewardDot * 0.4 * this.chassis.mass
-            const torqueZ = - forwardDot * 0.8 * this.chassis.mass
-            const torque = new THREE.Vector3(torqueX, 0, torqueZ)
-            torque.applyQuaternion(this.chassis.physical.body.rotation())
-            this.chassis.physical.body.applyTorqueImpulse(torque)
-        }
-    }
-
 
     updatePrePhysics()
     {
@@ -422,6 +518,9 @@ export class PhysicsVehicle
         this.goingForward = this.forwardRatio > 0.5
         this.forwardSpeed = this.speed * this.forwardRatio
 
+        this.zRotation = new THREE.Euler().setFromQuaternion(this.quaternion, 'ZYX').z
+        this.xRotation = new THREE.Euler().setFromQuaternion(this.quaternion, 'XYZ').x
+
         if(Math.abs(this.game.player.accelerating) > 0.5)
             this.stuck.accumulate(this.velocity.length(), this.game.ticker.deltaScaled)
 
@@ -436,6 +535,8 @@ export class PhysicsVehicle
         this.stop.test()
         this.upsideDown.test()
         this.stuck.test()
+        this.backWheel.test()
+        this.flip.test()
     }
 
     activate()

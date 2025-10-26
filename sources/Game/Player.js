@@ -29,6 +29,8 @@ export class Player
         
         this.setInputs()
         this.setUnstuck()
+        this.setBackWheel()
+        this.setFlip()
 
         this.game.physicalVehicle.chassis.physical.initialState.position.x = respawn.position.x
         this.game.physicalVehicle.chassis.physical.initialState.position.y = respawn.position.y
@@ -148,7 +150,7 @@ export class Player
                 this.unstuck.delay.kill()
         })
 
-        this.game.physicalVehicle.events.on('upsideDown', () =>
+        this.game.physicalVehicle.events.on('upsideDown', (ratio) =>
         {
             // Reset delay
             if(this.unstuck.delay)
@@ -164,7 +166,13 @@ export class Player
 
                 // Still upside down => Flip back
                 if(this.game.physicalVehicle.upsideDown.active)
-                    this.game.physicalVehicle.flip()
+                {
+                    this.game.physicalVehicle.flip.jump()
+
+                    // Achievement
+                    if(this.game.physicalVehicle.upsideDown.ratio > 0.75)
+                        this.game.achievements.setProgress('upsideDown', 1)
+                }
             })
         })
 
@@ -182,6 +190,50 @@ export class Player
         {
             this.game.inputs.interactiveButtons.removeItems(['unstuck'])
             this.respawn()
+        })
+    }
+
+    setBackWheel()
+    {
+        let delay = null
+        let startTime = null
+
+        this.game.physicalVehicle.events.on('backWheel', (_active) =>
+        {
+            if(_active)
+            {
+                startTime = this.game.ticker.elapsed
+
+                if(delay)
+                {
+                    delay.kill()
+                    delay = null
+                }
+            }
+            else
+            {
+                delay = gsap.delayedCall(0.1, () =>
+                {
+                    delay = null
+
+                    const duration = this.game.ticker.elapsed - startTime
+
+                    if(duration > 5)
+                        this.game.achievements.setProgress('backWheel', 1)
+                })
+            }
+        })
+    }
+
+    setFlip()
+    {
+        this.game.physicalVehicle.events.on('flip', (direction) =>
+        {
+            console.log(direction)
+            if(direction > 0)
+                this.game.achievements.setProgress('frontFlip', 1)
+            else
+                this.game.achievements.setProgress('backFlip', 1)
         })
     }
 
@@ -317,5 +369,10 @@ export class Player
         // Inputs touch joystick
         this.rotationY = Math.atan2(this.game.physicalVehicle.forward.z, this.game.physicalVehicle.forward.x)
         this.game.inputs.nipple.setCoordinates(this.position.x, this.position.y, this.position.z, this.rotationY)
+
+        // Sea achievement
+        const distanceToCenter = this.position2.length()
+        if(distanceToCenter > 120)
+            this.game.achievements.setProgress('sea', 1)
     }
 }

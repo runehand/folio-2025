@@ -13,7 +13,7 @@ export class Achievements
         this.setItems()
         this.setGlobalProgress()
         this.setReset()
-        
+
         this.checkDependents()
     }
 
@@ -24,10 +24,10 @@ export class Achievements
         this.storage.save = () =>
         {
             const data = {}
-            this.items.forEach((_achievement, _name) =>
+            this.items.forEach((_achievements, _name) =>
             {
-                if(_achievement.progress > 0)
-                    data[_name] = _achievement.progress
+                if(_achievements.progress > 0)
+                    data[_name] = _achievements.progress
             })
 
             const encodedData = JSON.stringify(data)
@@ -77,7 +77,6 @@ export class Achievements
         {
             const achievement = {
                 total,
-                progress: 0,
                 achieved: false
             }
 
@@ -97,31 +96,73 @@ export class Achievements
                 </div>
             `
 
-            const itemElement = document.createElement('div')
-            itemElement.classList.add('achievement')
-            itemElement.innerHTML = html
+            achievement.itemElement = document.createElement('div')
+            achievement.itemElement.classList.add('achievement')
+            achievement.itemElement.innerHTML = html
 
-            const progressCurrentElement = itemElement.querySelector('.current')
-            const barFillElement = itemElement.querySelector('.bar .fill')
+            achievement.progressCurrentElement = achievement.itemElement.querySelector('.current')
+            achievement.barFillElement = achievement.itemElement.querySelector('.bar .fill')
             
-            itemsElement.append(itemElement)
+            itemsElement.append(achievement.itemElement)
 
-            // Set progress method
-            achievement.setProgress = (_progress, _fromLocal = false) =>
+            // Achieve
+            achievement.achieve = (_silent = true) =>
             {
-                const progress = Math.min(_progress, total)
+                achievement.achieved = true
+                achievement.itemElement.classList.add('is-achieved')
 
-                if(progress !== achievement.progress)
+                if(!_silent)
                 {
+                    // Confetti
+                    if(this.game.world.confetti)
+                    {
+                        this.game.world.confetti.pop(this.game.player.position.clone())
+                        this.game.world.confetti.pop(this.game.player.position.clone().add(new THREE.Vector3(1, -1, 1.5)))
+                        this.game.world.confetti.pop(this.game.player.position.clone().add(new THREE.Vector3(1, -1, -1.5)))
+                    }
+                }
+            }
+
+
+            /**
+             * Achievements (parent)
+             */
+            const achievements = this.items.get(name) ?? this.createAchievementsGroup(name)
+            
+            achievements.items.push(achievement)
+            
+            // From local
+            achievements.setProgress(localAchievements[ name ] ?? 0, true)
+        }
+    }
+
+    createAchievementsGroup(name)
+    {
+        // Create
+        const achievements = {
+            progress: 0,
+            items: []
+        }
+
+        // Set progress method
+        achievements.setProgress = (_progress, _fromLocal = false) =>
+        {
+            if(_progress !== achievements.progress || _fromLocal)
+            {
+                achievements.progress = _progress
+
+                for(const achievement of achievements.items)
+                {
+                    const progress = Math.min(achievements.progress, achievement.total)
+
                     // Progress
-                    achievement.progress = progress
-                    progressCurrentElement.textContent = achievement.progress
+                    achievement.progressCurrentElement.textContent = progress
 
                     // Bar
-                    barFillElement.style.transform = `scaleX(${achievement.progress / total})`
+                    achievement.barFillElement.style.transform = `scaleX(${progress / achievement.total})`
 
                     // Achieved
-                    if(achievement.progress === achievement.total)
+                    if(!achievement.achieved && progress === achievement.total)
                     {
                         achievement.achieve(_fromLocal)
 
@@ -140,48 +181,32 @@ export class Achievements
                     }
                 }
             }
-
-            // Add progress method
-            achievement.addProgress = () =>
-            {
-                achievement.setProgress(achievement.progress + 1)
-            }
-
-            // Achive
-            achievement.achieve = (_silent = true) =>
-            {
-                achievement.achieved = true
-                itemElement.classList.add('is-achieved')
-
-                if(!_silent)
-                {
-                    // Confetti
-                    if(this.game.world.confetti)
-                    {
-                        this.game.world.confetti.pop(this.game.player.position.clone())
-                        this.game.world.confetti.pop(this.game.player.position.clone().add(new THREE.Vector3(1, -1, 1.5)))
-                        this.game.world.confetti.pop(this.game.player.position.clone().add(new THREE.Vector3(1, -1, -1.5)))
-                    }
-                }
-            }
-
-            // Reset
-            achievement.reset = () =>
-            {
-                achievement.progress = 0
-                progressCurrentElement.textContent = achievement.progress
-                barFillElement.style.transform = 'scaleX(0)'
-                achievement.achieved = false
-                itemElement.classList.remove('is-achieved')
-            }
-            
-            // Save
-            this.items.set(name, achievement)
-
-            // From local
-            if(localAchievements[name])
-                achievement.setProgress(localAchievements[name], true)
         }
+
+        // Add progress method
+        achievements.addProgress = () =>
+        {
+            achievements.setProgress(achievements.progress + 1)
+        }
+
+        // Reset
+        achievements.reset = () =>
+        {
+            achievements.progress = 0
+            for(const achievement of achievements.items)
+            {
+                achievement.progressCurrentElement.textContent = achievement.progress
+                achievement.barFillElement.style.transform = 'scaleX(0)'
+                achievement.achieved = false
+                achievement.itemElement.classList.remove('is-achieved')
+            }
+        }
+
+        // Save
+        this.items.set(name, achievements)
+
+        // Return
+        return achievements
     }
 
     setModal()
@@ -230,33 +255,33 @@ export class Achievements
 
     setProgress(name, progress)
     {
-        const achievement = this.items.get(name)
+        const achievements = this.items.get(name)
 
-        if(achievement)
-            achievement.setProgress(progress)
+        if(achievements)
+            achievements.setProgress(progress)
     }
 
     addProgress(name)
     {
-        const achievement = this.items.get(name)
+        const achievements = this.items.get(name)
 
-        if(achievement)
-            achievement.addProgress()
+        if(achievements)
+            achievements.addProgress()
     }
 
     checkDependents()
     {
         if(
-            this.items.get('projectsEnter').achieved &&
-            this.items.get('labEnter').achieved &&
-            this.items.get('careerEnter').achieved &&
-            this.items.get('socialEnter').achieved &&
-            this.items.get('cookieEnter').achieved &&
-            this.items.get('bowlingEnter').achieved &&
-            this.items.get('circuitEnter').achieved &&
-            this.items.get('toiletEnter').achieved &&
-            this.items.get('altarEnter').achieved &&
-            this.items.get('behindTheSceneEnter').achieved
+            this.items.get('projectsEnter').items[0].achieved &&
+            this.items.get('labEnter').items[0].achieved &&
+            this.items.get('careerEnter').items[0].achieved &&
+            this.items.get('socialEnter').items[0].achieved &&
+            this.items.get('cookieEnter').items[0].achieved &&
+            this.items.get('bowlingEnter').items[0].achieved &&
+            this.items.get('circuitEnter').items[0].achieved &&
+            this.items.get('toiletEnter').items[0].achieved &&
+            this.items.get('altarEnter').items[0].achieved &&
+            this.items.get('behindTheSceneEnter').items[0].achieved
         )
         {
             this.setProgress('allEnter', 1)
@@ -265,9 +290,9 @@ export class Achievements
 
     reset()
     {
-        this.items.forEach(_achievement =>
+        this.items.forEach(achievements =>
         {
-            _achievement.reset()
+            achievements.reset()
         })
 
         this.storage.save()
