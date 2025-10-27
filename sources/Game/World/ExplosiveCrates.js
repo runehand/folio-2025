@@ -10,9 +10,11 @@ export class ExplosiveCrates
         const meshes = [ ...this.game.resources.cratesModel.scene.children ]
         this.list = []
         
+        let i = 0
         for(const mesh of meshes)
         {
             const crate = {}
+            crate.id = i
             crate.isSleeping = true
             crate.position = mesh.position.clone()
             crate.object = this.game.objects.add(
@@ -36,6 +38,8 @@ export class ExplosiveCrates
             )
 
             this.list.push(crate)
+
+            i++
         }
 
         this.game.ticker.events.on('tick', () =>
@@ -60,7 +64,10 @@ export class ExplosiveCrates
                         this.game.world.fireballs.create(crate.object.physical.body.translation())
 
                         // Disable
-                        this.game.objects.disable(crate.object)  
+                        this.game.objects.disable(crate.object)
+
+                        // Achievements
+                        this.game.achievements.setProgress('explosiveCrates', crate.id)
                     })
                 }
                 crate.isSleeping = isSleeping

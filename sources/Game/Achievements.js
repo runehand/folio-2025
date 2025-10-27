@@ -10,11 +10,26 @@ export class Achievements
 
         this.setStorage()
         this.setModal()
+        this.setGroups()
         this.setItems()
         this.setGlobalProgress()
         this.setReset()
 
-        this.checkDependents()
+        this.checkDependencies()
+        this.globalProgress.update()
+
+        const localAchievements = this.storage.get()
+
+        for(const groupName in localAchievements)
+        {
+            const group = this.groups.get(groupName)
+
+            if(group)
+            {
+                const progress = localAchievements[ groupName ]
+                group.setProgress(progress, true)
+            }
+        }
     }
 
     setStorage()
@@ -24,10 +39,18 @@ export class Achievements
         this.storage.save = () =>
         {
             const data = {}
-            this.items.forEach((_achievements, _name) =>
+            this.groups.forEach((group, name) =>
             {
-                if(_achievements.progress > 0)
-                    data[_name] = _achievements.progress
+                if(group.progress instanceof Set)
+                {
+                    if(group.progress.size)
+                        data[name] = [ ...group.progress ]
+                }
+                else
+                {
+                    if(group.progress > 0)
+                        data[name] = group.progress
+                }
             })
 
             const encodedData = JSON.stringify(data)
@@ -39,9 +62,7 @@ export class Achievements
             const localAchievements = localStorage.getItem('achievements')
 
             if(localAchievements)
-            {
                 return JSON.parse(localAchievements)
-            }
 
             return {}
         }
@@ -57,20 +78,119 @@ export class Achievements
         this.globalProgress.update = () =>
         {
             let achievedCount = 0
-            this.items.forEach(_item => achievedCount += _item.achieved ? 1 : 0)
+            this.groups.forEach(_item => achievedCount += _item.achieved ? 1 : 0)
             
-            this.globalProgress.total.textContent = this.items.size
+            this.globalProgress.total.textContent = this.groups.size
             this.globalProgress.current.textContent = achievedCount
         }
+    }
 
-        this.globalProgress.update()
+    setGroups()
+    {
+        this.groups = new Map()
+        
+        for(const [ name, title, description, total, unique = false ] of achievementsData)
+        {
+            // Get if exists or create
+            const group = this.groups.get(name) ?? this.createGroup(name)
+
+            // One of the achievements is "unique" => Make prorgess as a Set
+            if(unique && !(group.progress instanceof Set))
+            {
+                group.progress = new Set()
+            }
+        }
+    }
+
+    createGroup(name)
+    {
+        // Create
+        const group = {
+            progress: 0,
+            items: []
+        }
+
+        // Set progress method
+        group.setProgress = (_progress, _silent = false) =>
+        {
+            let oldProgress = group.progress instanceof Set ? group.progress.size : group.progress
+
+            if(group.progress instanceof Set)
+            {
+                const ids = _progress instanceof Array ? _progress : [ _progress ]
+                for(const id of ids)
+                    group.progress.add(id)
+            }
+            else
+            {
+                if(_progress !== group.progress)
+                    group.progress = _progress
+            }
+
+            const newProgress = group.progress instanceof Set ? group.progress.size : group.progress
+            const progressDelta = newProgress - oldProgress
+            if(progressDelta)
+                group.updateItems(_silent)
+
+            return progressDelta
+        }
+
+        // Add progress method
+        group.addProgress = (_progress) =>
+        {
+            group.setProgress(group.progress + 1)
+        }
+
+        // Update items of group
+        group.updateItems = (_silent) =>
+        {
+            const groupProgress = group.progress instanceof Set ? group.progress.size : group.progress
+
+            // if(group.hasUnique)
+            // {
+            // }
+
+            for(const achievement of group.items)
+            {
+                const progress = Math.min(groupProgress, achievement.total)
+
+                // Progress
+                achievement.progressCurrentElement.textContent = progress
+
+                // Bar
+                achievement.barFillElement.style.transform = `scaleX(${progress / achievement.total})`
+
+                // Achieved
+                if(!achievement.achieved && progress === achievement.total)
+                {
+                    achievement.achieve(_silent)
+                }
+            }
+        }
+
+        // Reset
+        group.reset = () =>
+        {
+            group.progress = 0
+
+            for(const achievement of group.items)
+            {
+                achievement.progressCurrentElement.textContent = group.progress
+                achievement.barFillElement.style.transform = 'scaleX(0)'
+                achievement.achieved = false
+                achievement.itemElement.classList.remove('is-achieved')
+            }
+        }
+
+        // Save
+        this.groups.set(name, group)
+
+        // Return
+        return group
     }
 
     setItems()
     {
-        const localAchievements = this.storage.get()
-
-        this.items = new Map()
         const itemsElement = this.modal.instance.element.querySelector('.js-items')
 
         for(const [ name, title, description, total ] of achievementsData)
@@ -79,6 +199,8 @@ export class Achievements
                 total,
                 achieved: false
             }
+            const group = this.groups.get(name)
+            group.items.push(achievement)
 
             // HTML
             const html = /* html */`
@@ -88,7 +210,7 @@ export class Achievements
                     <div class="progress">
                         <div class="check-icon"></div>
                         <span class="check"></span>
-                        <span class="current">${achievement.progress}</span> / <span>${total}</span>
+                        <span class="current">${0}</span> / <span>${total}</span>
                     </div>
                 </div>
                 <div class="bar">
@@ -122,91 +244,7 @@ export class Achievements
                     }
                 }
             }
-
-
-            /**
-             * Achievements (parent)
-             */
-            const achievements = this.items.get(name) ?? this.createAchievementsGroup(name)
-            
-            achievements.items.push(achievement)
-            
-            // From local
-            achievements.setProgress(localAchievements[ name ] ?? 0, true)
         }
-    }
-
-    createAchievementsGroup(name)
-    {
-        // Create
-        const achievements = {
-            progress: 0,
-            items: []
-        }
-
-        // Set progress method
-        achievements.setProgress = (_progress, _fromLocal = false) =>
-        {
-            if(_progress !== achievements.progress || _fromLocal)
-            {
-                achievements.progress = _progress
-
-                for(const achievement of achievements.items)
-                {
-                    const progress = Math.min(achievements.progress, achievement.total)
-
-                    // Progress
-                    achievement.progressCurrentElement.textContent = progress
-
-                    // Bar
-                    achievement.barFillElement.style.transform = `scaleX(${progress / achievement.total})`
-
-                    // Achieved
-                    if(!achievement.achieved && progress === achievement.total)
-                    {
-                        achievement.achieve(_fromLocal)
-
-                        if(!_fromLocal)
-                        {
-                            this.checkDependents()
-                        }
-
-                    }
-
-                    // Storage
-                    if(!_fromLocal)
-                    {
-                        this.storage.save()
-                        this.globalProgress.update()
-                    }
-                }
-            }
-        }
-
-        // Add progress method
-        achievements.addProgress = () =>
-        {
-            achievements.setProgress(achievements.progress + 1)
-        }
-
-        // Reset
-        achievements.reset = () =>
-        {
-            achievements.progress = 0
-            for(const achievement of achievements.items)
-            {
-                achievement.progressCurrentElement.textContent = achievement.progress
-                achievement.barFillElement.style.transform = 'scaleX(0)'
-                achievement.achieved = false
-                achievement.itemElement.classList.remove('is-achieved')
-            }
-        }
-
-        // Save
-        this.items.set(name, achievements)
-
-        // Return
-        return achievements
     }
 
     setModal()
@@ -255,33 +293,48 @@ export class Achievements
 
     setProgress(name, progress)
     {
-        const achievements = this.items.get(name)
+        const group = this.groups.get(name)
 
-        if(achievements)
-            achievements.setProgress(progress)
+        if(!group)
+            return
+
+        const progressDelta = group.setProgress(progress)
+
+        if(progressDelta)
+        {
+            this.checkDependencies()
+            this.globalProgress.update()
+            this.storage.save()
+        }
     }
 
     addProgress(name)
     {
-        const achievements = this.items.get(name)
+        const group = this.groups.get(name)
 
-        if(achievements)
-            achievements.addProgress()
+        if(!group)
+            return
+            
+        group.addProgress()
+
+        this.checkDependencies()
+        this.globalProgress.update()
+        this.storage.save()
     }
 
-    checkDependents()
+    checkDependencies()
     {
         if(
-            this.items.get('projectsEnter').items[0].achieved &&
-            this.items.get('labEnter').items[0].achieved &&
-            this.items.get('careerEnter').items[0].achieved &&
-            this.items.get('socialEnter').items[0].achieved &&
-            this.items.get('cookieEnter').items[0].achieved &&
-            this.items.get('bowlingEnter').items[0].achieved &&
-            this.items.get('circuitEnter').items[0].achieved &&
-            this.items.get('toiletEnter').items[0].achieved &&
-            this.items.get('altarEnter').items[0].achieved &&
-            this.items.get('behindTheSceneEnter').items[0].achieved
+            // this.groups.get('projectsEnter').items[0].achieved &&
+            // this.groups.get('labEnter').items[0].achieved &&
+            // this.groups.get('careerEnter').items[0].achieved &&
+            // this.groups.get('socialEnter').items[0].achieved &&
+            this.groups.get('cookieEnter').items[0].achieved// &&
+            // this.groups.get('bowlingEnter').items[0].achieved &&
+            // this.groups.get('circuitEnter').items[0].achieved &&
+            // this.groups.get('toiletEnter').items[0].achieved &&
+            // this.groups.get('altarEnter').items[0].achieved &&
+            // this.groups.get('behindTheSceneEnter').items[0].achieved
         )
         {
             this.setProgress('allEnter', 1)
@@ -290,9 +343,9 @@ export class Achievements
 
     reset()
     {
-        this.items.forEach(achievements =>
+        this.groups.forEach(group =>
         {
-            achievements.reset()
+            group.reset()
         })
 
         this.storage.save()

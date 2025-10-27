@@ -99,6 +99,12 @@ export class Player
 
             for(let i = 0; i < 4; i++)
                 this.suspensions[i] = activeSuspensions[i] ? activeState : 'low'
+
+            if(
+                (activeSuspensions[0] || activeSuspensions[1] || activeSuspensions[2] || activeSuspensions[3]) && // Any suspension
+                !this.game.inputs.actions.get('suspensions').active // Not a jump
+            )
+                this.game.achievements.addProgress('suspensions')
         }
 
         this.game.inputs.events.on('suspensions', suspensionsUpdate)
@@ -229,7 +235,6 @@ export class Player
     {
         this.game.physicalVehicle.events.on('flip', (direction) =>
         {
-            console.log(direction)
             if(direction > 0)
                 this.game.achievements.setProgress('frontFlip', 1)
             else

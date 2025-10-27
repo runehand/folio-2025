@@ -123,7 +123,20 @@ export default
     [
         'backFlip',
         'Flip of faith',
-        'Do a back flip without touching the floor and land on your 4 wheels.',
+        'Do a back flip and land on your 4 wheels.',
         1
+    ],
+    [
+        'suspensions',
+        'Lowrider',
+        'Use the vehicle suspensions.',
+        4
+    ],
+    [
+        'explosiveCrates',
+        'Great Explosion Murder God Dynamight',
+        'Blow up every explosive crate.',
+        20,
+        true // Unique
     ],
 ]
