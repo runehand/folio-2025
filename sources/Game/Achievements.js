@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import achievementsData from '../data/achievements.js'
 import { Game } from './Game.js'
+import { timeToReadableString } from './utilities/time.js'
 
 export class Achievements
 {
@@ -73,6 +74,14 @@ export class Achievements
         this.globalProgress.element = this.modal.instance.element.querySelector('.js-global-progress')
         this.globalProgress.current = this.globalProgress.element.querySelector('.js-current')
         this.globalProgress.total = this.globalProgress.element.querySelector('.js-total')
+        this.globalProgress.time = this.globalProgress.element.querySelector('.js-time')
+        this.globalProgress.achieved = false
+
+        const localTimeStart = localStorage.getItem('achievementsTimeStart')
+        const localTimeEnd = localStorage.getItem('achievementsTimeEnd')
+
+        this.globalProgress.timeStart = localTimeStart ? parseFloat(localTimeStart) : 0
+        this.globalProgress.timeEnd = localTimeEnd ? parseFloat(localTimeEnd) : 0
 
         this.globalProgress.update = () =>
         {
@@ -88,6 +97,40 @@ export class Achievements
             
             this.globalProgress.total.textContent = totalCount
             this.globalProgress.current.textContent = achievedCount
+            
+            if(achievedCount === totalCount)
+            {
+                // Achieve
+                if(!this.globalProgress.achieved)
+                {
+                    // Not already ended
+                    if(!localStorage.getItem('achievementsTimeEnd'))
+                    {
+                        this.globalProgress.timeEnd = this.game.player.timePlayed
+                        localStorage.setItem('achievementsTimeEnd', this.globalProgress.timeEnd)
+                    }
+
+                    this.globalProgress.time.textContent = timeToReadableString(this.globalProgress.timeEnd - this.globalProgress.timeStart)
+
+                    this.globalProgress.achieved = true
+                    this.globalProgress.element.classList.add('is-achieved')
+                }
+            }
+        }
+
+
+        this.globalProgress.reset = () =>
+        {
+            this.globalProgress.achieved = false
+
+            this.globalProgress.current.textContent = 0
+
+            this.globalProgress.timeStart = this.game.player.timePlayed
+            this.globalProgress.timeEnd = 0
+            localStorage.setItem('achievementsTimeStart', this.globalProgress.timeStart)
+            localStorage.removeItem('achievementsTimeEnd')
+            
+            this.globalProgress.element.classList.remove('is-achieved')
         }
     }
 
@@ -333,6 +376,7 @@ export class Achievements
             group.reset()
         })
 
+        this.globalProgress.reset()
         this.storage.save()
     }
 }

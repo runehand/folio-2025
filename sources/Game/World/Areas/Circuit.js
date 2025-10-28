@@ -9,38 +9,7 @@ import { add, color, float, Fn, max, mix, normalGeometry, objectPosition, PI, po
 import { alea } from 'seedrandom'
 import { InputFlag } from '../../InputFlag.js'
 import { Area } from './Area.js'
-
-const rng = new alea('circuit')
-
-const timeToRaceString = (time) =>
-{
-    const minutes = Math.floor(time / 60)
-    const seconds = Math.floor((time % 60))
-    const milliseconds = Math.floor((time * 1000) % 1000)
-
-    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}:${String(milliseconds).padStart(3, '0')}`
-}
-
-function timeToReadableString(time)
-{
-    const hours = Math.floor(time / 3600)
-    const minutes = Math.floor((time % 3600) / 60)
-    // const seconds = Math.floor((time % 60))
-    // const milliseconds = (time * 1000) % 1000
-    
-    const parts = []
-
-    if(hours > 0)
-        parts.push(`${hours}h`)
-
-    if(hours > 0 || minutes > 0)
-        parts.push(`${minutes}m`)
-
-    // if(hours > 0 || minutes > 0 || seconds > 0)
-    //     parts.push(`${seconds}s`)
-
-    return parts.join(' ')
-}
+import { timeToRaceString, timeToReadableString } from '../../utilities/time.js'
 
 export default class Circuit extends Area
 {
@@ -1063,7 +1032,7 @@ export default class Circuit extends Area
         {
             const timeToReset = dayDuration - (Date.now() - this.resetTime.resetTime) % dayDuration
 
-            const formatedTime = timeToReadableString(timeToReset / 1000)
+            const formatedTime = timeToReadableString(timeToReset / 1000, true, true, false)
 
             if(formatedTime !== this.resetTime.lastTimeDrawn)
             {

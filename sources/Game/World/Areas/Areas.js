@@ -13,6 +13,7 @@ import { Toilet } from './Toilet.js'
 import { Bowling } from './Bowling.js'
 import Circuit from './Circuit.js'
 import { BehindTheScene } from './BehindTheScene.js'
+import { Achievements } from './Achievements.js'
 
 export class Areas
 {
@@ -30,6 +31,10 @@ export class Areas
 
         this.setReferences()
         this.setObjects()
+
+        const achievementsReferences = this.references.getStartingWith('achievements')
+        if(achievementsReferences.size)
+            this.achievements = new Achievements(achievementsReferences)
 
         const behindTheSceneReferences = this.references.getStartingWith('behindTheScene')
         if(behindTheSceneReferences.size)

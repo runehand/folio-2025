@@ -43,11 +43,26 @@
                 position relative
                 top -0.5em
                 text-align center
-                font-weight 700
-                color #ffceca
 
                 &.is-achieved
-                    color #d5ff95
+                    .ratio
+                        color #d5ff95
+
+                    .time
+                        display inline
+                        font-weight 700
+
+                        &::before
+                            content 'in '
+                            font-weight 400
+                            opacity 0.65
+
+                .ratio
+                    color #ffceca
+                    font-weight 700
+
+                .time
+                    display none
 
             .items
                 margin-bottom 2em

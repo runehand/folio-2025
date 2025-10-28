@@ -32,6 +32,7 @@ export class Player
         this.setUnstuck()
         this.setBackWheel()
         this.setFlip()
+        this.setTimePlayed()
 
         this.game.physicalVehicle.chassis.physical.initialState.position.x = respawn.position.x
         this.game.physicalVehicle.chassis.physical.initialState.position.y = respawn.position.y
@@ -251,6 +252,17 @@ export class Player
         })
     }
 
+    setTimePlayed()
+    {
+        const localTimePlayed = localStorage.getItem('timePlayed')
+        this.timePlayed = localTimePlayed ? parseFloat(localTimePlayed) : 0
+
+        setInterval(() =>
+        {
+            localStorage.setItem('timePlayed', this.timePlayed)
+        }, 1000)
+    }
+
     respawn(respawnName = null, callback = null)
     {
         this.game.overlay.show(() =>
@@ -392,6 +404,9 @@ export class Player
         this.rotationY = Math.atan2(this.game.physicalVehicle.forward.z, this.game.physicalVehicle.forward.x)
         this.game.inputs.nipple.setCoordinates(this.position.x, this.position.y, this.position.z, this.rotationY)
 
+        // Time played
+        this.timePlayed += this.game.ticker.delta
+
         // Sea achievement
         const distanceToCenter = this.position2.length()
         if(distanceToCenter > 120)
@@ -399,20 +414,20 @@ export class Player
 
         // Go high achievements
         const elevation = Math.floor(this.position.y)
-        if(elevation > this.game.achievements.groups.get('goHigh').progress)
+        if(this.game.achievements.groups.get('goHigh') && elevation > this.game.achievements.groups.get('goHigh').progress)
             this.game.achievements.setProgress('goHigh', elevation)
 
         // Speed achievement
         const speedKmPerHour = Math.floor(this.game.physicalVehicle.xzSpeed / 1000 * 3600)
 
-        if(speedKmPerHour > this.game.achievements.groups.get('speed').progress)
+        if(this.game.achievements.groups.get('speed') && speedKmPerHour > this.game.achievements.groups.get('speed').progress)
             this.game.achievements.setProgress('speed', speedKmPerHour)
 
         // Drive achievement
         this.distanceDriven += this.game.physicalVehicle.xzSpeed * this.game.ticker.deltaScaled
         const distanceDrivenKm = Math.floor(this.distanceDriven / 1000)
 
-        if(distanceDrivenKm > this.game.achievements.groups.get('distanceDriven').progress)
+        if(this.game.achievements.groups.get('distanceDriven') && distanceDrivenKm > this.game.achievements.groups.get('distanceDriven').progress)
             this.game.achievements.setProgress('distanceDriven', distanceDrivenKm)
     }
 }
