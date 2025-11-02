@@ -132,7 +132,7 @@ export class VisualVehicle
         
         // Flames
         {
-            const material = this.paints.choices.red.clone()
+            const material = this.paints.choices.white.clone()
             const baseOutput = material.outputNode
             const colorA = uniform(color('#ff9c20'))
             const colorB = uniform(color('#ff0000'))
@@ -232,7 +232,7 @@ export class VisualVehicle
         }
         
         // From achievemnts
-        this.paints.changeTo(this.game.achievements.rewards.current.name)
+        this.paints.changeTo('fire')
 
         this.game.achievements.events.on('rewardActiveChange', (reward) =>
         {
