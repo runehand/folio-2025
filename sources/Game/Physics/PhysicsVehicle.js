@@ -108,6 +108,7 @@ export class PhysicsVehicle
     {
         // Setup
         this.wheels = {}
+        this.wheels.inContactCount = 0
         this.wheels.items = []
 
         // Create wheels
@@ -347,12 +348,8 @@ export class PhysicsVehicle
 
         this.flip.test = () =>
         {
-            let inContactCount = 0
-            for(const wheel of this.wheels.items)
-                inContactCount += wheel.inContact ? 1 : 0
-            
             // Every wheel stop touching
-            if(inContactCount === 0)
+            if(this.wheels.inContactCount === 0)
             {
                 // Wasn't in the air => Start
                 if(!inAir)
@@ -368,7 +365,7 @@ export class PhysicsVehicle
             }
 
             // 4 wheels are touching
-            if(inContactCount >= 4)
+            if(this.wheels.inContactCount >= 4)
             {
                 // Was in the air => stop
                 if(inAir)
@@ -526,12 +523,16 @@ export class PhysicsVehicle
         if(Math.abs(this.game.player.accelerating) > 0.5)
             this.stuck.accumulate(this.velocity.length(), this.game.ticker.deltaScaled)
 
+        this.wheels.inContactCount = 0
         for(let i = 0; i < 4; i++)
         {
             const wheel = this.wheels.items[i]
             wheel.inContact = this.controller.wheelIsInContact(i)
             wheel.contactPoint = this.controller.wheelContactPoint(i)
             wheel.suspensionLength = this.controller.wheelSuspensionLength(i)
+
+            if(wheel.inContact)
+                this.wheels.inContactCount++
         }
 
         this.stop.test()

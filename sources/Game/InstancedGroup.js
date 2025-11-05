@@ -71,7 +71,6 @@ export class InstancedGroup
     {
         // Base
         const base = instances[0].clone()
-        console.log(base)
 
         base.position.set(0, 0, 0)
         base.rotation.set(0, 0, 0)

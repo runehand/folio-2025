@@ -15,7 +15,7 @@ export class Rendering
         {
             this.debugPanel = this.game.debug.panel.addFolder({
                 title: '📸 Rendering',
-                expanded: true,
+                expanded: false,
             })
         }
     }

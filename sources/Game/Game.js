@@ -159,6 +159,7 @@ export class Game
         this.closingManager = new ClosingManager()
         this.konamiCode = new KonamiCode()
         this.achievements = new Achievements()
+        this.audio = new Audio()
         // this.monitoring = new Monitoring()
         this.world.init(1)
 

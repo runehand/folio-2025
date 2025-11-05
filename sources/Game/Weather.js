@@ -13,7 +13,7 @@ export class Weather
         {
             this.debugPanel = this.game.debug.panel.addFolder({
                 title: '🌦️ Weather',
-                expanded: false,
+                expanded: true,
             })
         }
 

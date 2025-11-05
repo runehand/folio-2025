@@ -382,7 +382,7 @@ export class VisualVehicle
     {
         this.boostAnimation = {}
         this.boostAnimation.mix = 0
-        this.boostAnimation.speed = 0.5
+        this.boostAnimation.speed = 1.2
         this.boostAnimation.mixUniform = uniform(0)
 
         // Energy

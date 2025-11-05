@@ -140,6 +140,9 @@ export class Reveal
         else if(step = 1)
         {
             this.game.canvasElement.style.cursor = 'default'
+                
+            // Audio
+            this.game.audio.init()
 
             // Reveal
             gsap.to(
