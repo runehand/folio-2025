@@ -152,6 +152,9 @@ export class SocialArea extends Area
 
             this.fans.visibleCount = Math.min(this.fans.visibleCount + 1, this.fans.count)
 
+            // Sound
+            this.game.audio.groups.get('click')[0].play(true)
+
             // Achievement
             this.game.achievements.setProgress('fan', 1)
         }
