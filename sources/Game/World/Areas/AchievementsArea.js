@@ -279,11 +279,14 @@ export class AchievementsArea extends Area
                 return emissiveOutput
             })()
 
-            const mesh = new THREE.Sprite(material)
+            const geometry = new THREE.PlaneGeometry(1, 1)
+
+            const mesh = new THREE.Mesh(geometry, material)
             mesh.position.x = this.pillar.position.x
             mesh.position.y = 2
             mesh.position.z = this.pillar.position.z
             mesh.count = count
+
             this.game.scene.add(mesh)
         }
     }

@@ -138,12 +138,18 @@ export class CookieArea extends Area
             return scaleAttribute.mul(progressScale)
         })()
 
-        const geometry = new THREE.PlaneGeometry(0.03, 0.03)
+        const geometry = new THREE.CircleGeometry(0.015, 8)
 
         const mesh = new THREE.Mesh(geometry, material)
         mesh.position.copy(this.references.get('chimney')[0].position)
         mesh.count = count
         mesh.frustumCulled = true
+
+        this.game.ticker.wait(2, () =>
+        {
+            mesh.geometry.boundingSphere.center.y = 1
+            mesh.geometry.boundingSphere.radius = 1
+        })
         this.game.scene.add(mesh)
     }
 

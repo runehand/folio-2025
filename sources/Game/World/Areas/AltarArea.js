@@ -197,9 +197,6 @@ export class AltarArea extends Area
         const scale = instancedArray(scaleArray, 'float').toAttribute()
         const random = instancedArray(randomArray, 'float').toAttribute()
 
-        // Geometry
-        const particlesGeometry = new THREE.PlaneGeometry(0.2, 0.2)
-
         // Material
         const particlesMaterial = new THREE.SpriteNodeMaterial()
         particlesMaterial.outputNode = Fn(() =>
@@ -229,6 +226,9 @@ export class AltarArea extends Area
             return finalScale
         })()
         
+        // Geometry
+        const particlesGeometry = new THREE.PlaneGeometry(0.2, 0.2)
+
         // Mesh
         const particles = new THREE.Mesh(particlesGeometry, particlesMaterial)
         particles.count = count
@@ -304,13 +304,21 @@ export class AltarArea extends Area
             return vec4(this.color.mul(this.emissive), 1)
         })()
 
-        const mesh = new THREE.Sprite(material)
+        const geometry = new THREE.PlaneGeometry(1, 1)
+
+        const mesh = new THREE.Mesh(geometry, material)
         mesh.renderOrder = 3
         mesh.position.x = this.position.x
         mesh.position.y = 0
         mesh.position.z = this.position.z
         mesh.count = count
         this.game.scene.add(mesh)
+
+        this.game.ticker.wait(2, () =>
+        {
+            mesh.geometry.boundingSphere.center.y = 2
+            mesh.geometry.boundingSphere.radius = 5
+        })
     }
 
     setCounter()

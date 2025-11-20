@@ -109,7 +109,7 @@ export class PoleLights
         material.positionNode = positionAttribute.add(flyOffset)
         material.scaleNode = this.firefliesScale
 
-        const geometry = new THREE.PlaneGeometry(0.03, 0.03)
+        const geometry = new THREE.CircleGeometry(0.015, 8)
 
         const mesh = new THREE.Mesh(geometry, material)
         mesh.count = count

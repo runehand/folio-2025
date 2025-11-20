@@ -105,6 +105,11 @@ export class BonfireArea extends Area
                     // Bonfire
                     this.particles.visible = true
                     this.burn.material = this.game.materials.getFromName('emissiveOrangeRadialGradient')
+                    this.game.ticker.wait(2, () =>
+                    {
+                        this.particles.geometry.boundingSphere.center.y = 2
+                        this.particles.geometry.boundingSphere.radius = 2
+                    })
 
                     // Objects reset
                     this.game.objects.resetAll()
