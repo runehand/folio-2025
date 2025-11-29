@@ -608,22 +608,22 @@ export class View
         
         const newSmoothFocusPoint = this.focusPoint.smoothedPosition.clone().lerp(this.focusPoint.position, easing)
 
-        if(this.game.inputs.mode === Inputs.MODE_TOUCH && this.focusPoint.isTracking)
-        {
-            if(this.focusPoint.isEased)
-            {
-                this.focusPoint.isEased = false
-                gsap.to(this.focusPoint, { overwrite: true, easing: 0, duration: 1.5, ease: 'power4.out' })
-            }
-        }
-        else
-        {
-            if(!this.focusPoint.isEased)
-            {
-                this.focusPoint.isEased = true
-                gsap.to(this.focusPoint, { overwrite: true, easing: 1, duration: 1.5, ease: 'power4.out' })
-            }
-        }
+        // if(this.game.inputs.mode === Inputs.MODE_TOUCH && this.focusPoint.isTracking)
+        // {
+        //     if(this.focusPoint.isEased)
+        //     {
+        //         this.focusPoint.isEased = false
+        //         gsap.to(this.focusPoint, { overwrite: true, easing: 0, duration: 1.5, ease: 'power4.out' })
+        //     }
+        // }
+        // else
+        // {
+        //     if(!this.focusPoint.isEased)
+        //     {
+        //         this.focusPoint.isEased = true
+        //         gsap.to(this.focusPoint, { overwrite: true, easing: 1, duration: 1.5, ease: 'power4.out' })
+        //     }
+        // }
 
         const smoothFocusPointDelta = newSmoothFocusPoint.clone().sub(this.focusPoint.smoothedPosition)
         const focusPointSpeed = Math.hypot(smoothFocusPointDelta.x, smoothFocusPointDelta.z) / this.game.ticker.delta
@@ -642,7 +642,7 @@ export class View
             const zoomSpeedRatio = smoothstep(focusPointSpeed, this.zoom.speedEdge.min, this.zoom.speedEdge.max)
             this.zoom.ratio = this.zoom.baseRatio
 
-            if(this.focusPoint.isTracking)
+            if(this.focusPoint.isTracking && this.game.quality.level === 0)
                 this.zoom.ratio += this.zoom.speedAmplitude * zoomSpeedRatio
 
             this.zoom.smoothedRatio = lerp(this.zoom.smoothedRatio, this.zoom.ratio, this.game.ticker.delta * 10)

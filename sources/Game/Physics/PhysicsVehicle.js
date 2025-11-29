@@ -504,7 +504,8 @@ export class PhysicsVehicle
         }
 
         // Update controller
-        this.controller.updateVehicle(Math.min(this.game.ticker.deltaAverage, 1/60))
+        const delta = this.game.quality.level === 1 ? 1/60 : this.game.ticker.deltaAverage
+        this.controller.updateVehicle(delta)
     }
 
     updatePostPhysics()
