@@ -12,6 +12,7 @@ import { CircuitArea } from './CircuitArea.js'
 import { BehindTheSceneArea } from './BehindTheSceneArea.js'
 import { AchievementsArea } from './AchievementsArea.js'
 
+
 export class Areas
 {
     constructor()
@@ -45,5 +46,37 @@ export class Areas
                 }
             }
         }
+
+        // // Test how many areas are visible
+        // this.game.ticker.events.on('tick', () =>
+        // {
+        //     let i = 0
+        //     if(this.achievements.frustum.isIn)
+        //         i++
+        //     if(this.altar.frustum.isIn)
+        //         i++
+        //     if(this.behindTheScene.frustum.isIn)
+        //         i++
+        //     if(this.bowling.frustum.isIn)
+        //         i++
+        //     if(this.career.frustum.isIn)
+        //         i++
+        //     if(this.circuit.frustum.isIn)
+        //         i++
+        //     if(this.cookie.frustum.isIn)
+        //         i++
+        //     if(this.lab.frustum.isIn)
+        //         i++
+        //     if(this.landing.frustum.isIn)
+        //         i++
+        //     if(this.projects.frustum.isIn)
+        //         i++
+        //     if(this.social.frustum.isIn)
+        //         i++
+        //     if(this.toilet.frustum.isIn)
+        //         i++
+
+        //     console.log(i)
+        // }, 6)
     }
 }

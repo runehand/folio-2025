@@ -548,6 +548,7 @@ export class CircuitArea extends Area
     setRoad()
     {
         this.roadBody = this.references.items.get('road')[0].userData.object.physical.body
+        this.roadBody.setEnabled(false)
     }
     
     setRails()

@@ -166,6 +166,18 @@ export class View
         this.optimalArea.farDistance = null
         this.optimalArea.radius = 0
         this.optimalArea.raycaster = new THREE.Raycaster()
+        this.optimalArea.quad2 = [
+            { base: new THREE.Vector2(), offseted: new THREE.Vector2(), helper: null },
+            { base: new THREE.Vector2(), offseted: new THREE.Vector2(), helper: null },
+            { base: new THREE.Vector2(), offseted: new THREE.Vector2(), helper: null },
+            { base: new THREE.Vector2(), offseted: new THREE.Vector2(), helper: null },
+        ]
+
+        // for(const point of this.optimalArea.quad2)
+        // {
+        //     point.helper = new THREE.Mesh(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshBasicNodeMaterial({ color: '#ff00ff', wireframe: false }))
+        //     this.game.scene.add(point.helper)
+        // }
 
         this.optimalArea.floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
 
@@ -204,10 +216,14 @@ export class View
             this.optimalArea.raycaster.setFromCamera(new THREE.Vector2(1, -1), this.defaultCamera)
             this.optimalArea.raycaster.ray.intersectPlane(this.optimalArea.floorPlane, this.optimalArea.nearPosition)
             this.optimalArea.helpers.near.position.copy(this.optimalArea.nearPosition)
+            this.optimalArea.quad2[0].base.x = this.optimalArea.nearPosition.x
+            this.optimalArea.quad2[0].base.y = this.optimalArea.nearPosition.z
 
             this.optimalArea.raycaster.setFromCamera(new THREE.Vector2(-1, 1), this.defaultCamera)
             this.optimalArea.raycaster.ray.intersectPlane(this.optimalArea.floorPlane, this.optimalArea.farPosition)
             this.optimalArea.helpers.far.position.copy(this.optimalArea.farPosition)
+            this.optimalArea.quad2[2].base.x = this.optimalArea.farPosition.x
+            this.optimalArea.quad2[2].base.y = this.optimalArea.farPosition.z
 
             const centerA = this.optimalArea.nearPosition.clone().lerp(this.optimalArea.farPosition, 0.5)
 
@@ -215,10 +231,14 @@ export class View
             this.optimalArea.raycaster.setFromCamera(new THREE.Vector2(-1, -1), this.defaultCamera)
             this.optimalArea.raycaster.ray.intersectPlane(this.optimalArea.floorPlane, this.optimalArea.nearPosition)
             this.optimalArea.helpers.near.position.copy(this.optimalArea.nearPosition)
+            this.optimalArea.quad2[3].base.x = this.optimalArea.nearPosition.x
+            this.optimalArea.quad2[3].base.y = this.optimalArea.nearPosition.z
 
             this.optimalArea.raycaster.setFromCamera(new THREE.Vector2(1, 1), this.defaultCamera)
             this.optimalArea.raycaster.ray.intersectPlane(this.optimalArea.floorPlane, this.optimalArea.farPosition)
             this.optimalArea.helpers.far.position.copy(this.optimalArea.farPosition)
+            this.optimalArea.quad2[1].base.x = this.optimalArea.farPosition.x
+            this.optimalArea.quad2[1].base.y = this.optimalArea.farPosition.z
 
             const centerB = this.optimalArea.nearPosition.clone().lerp(this.optimalArea.farPosition, 0.5)
 
@@ -701,6 +721,17 @@ export class View
         if(this.optimalArea.needsUpdate)
             this.optimalArea.update()
         this.optimalArea.position.copy(this.optimalArea.basePosition).add(new THREE.Vector3(this.focusPoint.position.x, 0, this.focusPoint.position.z))
+        for(const point of this.optimalArea.quad2)
+        {
+            point.offseted.x = point.base.x + this.focusPoint.position.x
+            point.offseted.y = point.base.y + this.focusPoint.position.z
+
+            if(point.helper)
+            {
+                point.helper.position.x = point.offseted.x
+                point.helper.position.z = point.offseted.y
+            }
+        }
 
         // Speed lines
         this.speedLines.clipSpaceTarget.value.copy(this.speedLines.worldTarget)

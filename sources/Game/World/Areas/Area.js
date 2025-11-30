@@ -2,6 +2,7 @@ import * as THREE from 'three/webgpu'
 import { Events } from '../../Events.js'
 import { Game } from '../../Game.js'
 import { References } from '../../References.js'
+import { circleIntersectsPolygon } from '../../utilities/maths.js'
 
 export class Area
 {
@@ -23,7 +24,7 @@ export class Area
             if(this.frustum)
                 this.frustum.test()
                 
-            if(typeof this.update === 'function' && this.frustum.isIn)
+            if(typeof this.update === 'function' && (!this.frustum || this.frustum.isIn))
                 this.update()
         }, 5)
     }
@@ -118,14 +119,20 @@ export class Area
         
         this.frustum.test = () =>
         {
-            const distance = Math.hypot(
-                this.game.view.focusPoint.position.x - this.frustum.position.x,
-                this.game.view.focusPoint.position.z - this.frustum.position.y
+            const isIn = circleIntersectsPolygon(
+                this.frustum.position,
+                this.frustum.radius,
+                [
+                    this.game.view.optimalArea.quad2[0].offseted,
+                    this.game.view.optimalArea.quad2[1].offseted,
+                    this.game.view.optimalArea.quad2[2].offseted,
+                    this.game.view.optimalArea.quad2[3].offseted,
+                ]
             )
 
             if(
                 this.frustum.alwaysVisible ||
-                distance < this.frustum.radius + this.game.view.optimalArea.radius
+                isIn
             )
             {
                 if(this.frustum.isIn === false || this.frustum.isIn === null)
