@@ -424,7 +424,7 @@ export class Lightnings
             // Game explosion
             const vehicleHit = this.game.explosions.explode(coordinates, 7, 4, true)
 
-            if(vehicleHit)
+            if(this.game.reveal.step === 2 && vehicleHit)
                 this.game.achievements.setProgress('lightning', 1)
             
             // Arc

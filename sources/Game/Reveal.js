@@ -9,6 +9,7 @@ export class Reveal
     {
         this.game = Game.getInstance()
         
+        this.step = -1
         const respawn = this.game.respawns.getDefault()
         this.position = respawn.position.clone()
         this.position2Uniform = uniform(vec2(this.position.x, this.position.z))
@@ -42,7 +43,7 @@ export class Reveal
         this.game.ticker.events.on('tick', this.update, 9)
     }
 
-    step(step)
+    updateStep(step)
     {
         const speedMultiplier = location.hash.match(/skip/i) ? 4 : 1
 
@@ -98,14 +99,14 @@ export class Reveal
                 // Click
                 if(location.hash.match(/skip/i))
                 {
-                    this.step(1)
+                    this.updateStep(1)
                 }
                 else
                 {
                     // Next function
                     const next = () =>
                     {
-                        this.step(1)
+                        this.updateStep(1)
                         this.game.inputs.events.off('introStart', inputCallback)
                         this.game.rayCursor.removeIntersect(intersect)
                     }
@@ -185,7 +186,7 @@ export class Reveal
                     overwrite: true,
                     onComplete: () =>
                     {
-                        this.step(2)
+                        this.updateStep(2)
                     }
                 }
             )
@@ -214,6 +215,8 @@ export class Reveal
 
             this.game.ticker.events.off('tick', this.update)
         }
+
+        this.step = step
     }
 
     update()

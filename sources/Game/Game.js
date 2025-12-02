@@ -185,7 +185,7 @@ export class Game
 
         this.ticker.wait(3, () =>
         {
-            this.reveal.step(0)
+            this.reveal.updateStep(0)
         })
 
         if(this.debug.active)
