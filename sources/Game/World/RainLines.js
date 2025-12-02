@@ -12,6 +12,7 @@ export class RainLines
 
         this.count = Math.pow(2, 11)
         this.speed = 0.25
+        this.achievementAchieved = false
 
         this.setGeometry()
         this.setMaterial()
@@ -223,16 +224,26 @@ export class RainLines
 
     update()
     {
-        this.center.value.set(this.game.view.optimalArea.position.x, this.game.view.optimalArea.position.z)
-        this.localTime.value += this.game.ticker.deltaScaled * this.speed
-
-        // // Apply weather
+        // Apply weather
         this.visibleRatioBinding.update()
         this.lengthRatioBinding.update()
         this.speedRatioBinding.update()
         this.inclineRatioBinding.update()
 
-        // this.mesh.visible = this.visibleRatio.value > 0.00001
+        this.mesh.visible = this.visibleRatio.value > 0.00001
+
+        if(this.mesh.visible)
+        {
+            this.center.value.set(this.game.view.optimalArea.position.x, this.game.view.optimalArea.position.z)
+            this.localTime.value += this.game.ticker.deltaScaled * this.speed
+
+            // Achievement
+            if(!this.achievementAchieved && this.game.reveal.step === 2 && this.visibleRatio.value > 0.04 && this.length.value > 0.2)
+            {
+                this.achievementAchieved = true
+                this.game.achievements.setProgress('weatherRain', 1)
+            }
+        }
         
         // if(!this.mesh.visible)
         //     return

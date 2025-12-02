@@ -416,6 +416,7 @@ export class Snow
         this.mesh.castShadow = false
         this.mesh.receiveShadow = true
         this.mesh.visible = false
+        this.mesh.frustumCulled = false
         this.game.scene.add(this.mesh)
     }
 
