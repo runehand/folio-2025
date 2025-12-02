@@ -170,6 +170,12 @@ export default
         1
     ],
     [
+        'cataclysm',
+        'Witness me!',
+        'Witness a cataclysm',
+        1
+    ],
+    [
         'weatherSnow',
         'Do you want to build a snowman?',
         'Witness snowy weather.',

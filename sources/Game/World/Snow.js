@@ -10,6 +10,7 @@ export class Snow
     {
         this.game = Game.getInstance()
 
+        this.achievementAchieved = this.game.achievements.groups.get('weatherSnow')?.items[0].achieved
         this.size = this.game.view.optimalArea.radius * 2
         this.halfSize = this.size * 0.5
         this.subdivisions = 256
@@ -26,8 +27,7 @@ export class Snow
                 expanded: false,
             })
         }
-
-        this.achievementAchieved = false
+        
         this.setNodes()
         this.setSnowElevation()
         this.setGeometry()

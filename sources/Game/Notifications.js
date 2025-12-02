@@ -59,7 +59,7 @@ export class Notifications
         // Pending
         if(this.current)
         {
-            this.pendings.push([ html, duration, clickCallback ])
+            this.pendings.push([ html, type, duration, clickCallback ])
             return false
         }
 

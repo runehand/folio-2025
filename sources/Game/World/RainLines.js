@@ -12,7 +12,7 @@ export class RainLines
 
         this.count = Math.pow(2, 11)
         this.speed = 0.25
-        this.achievementAchieved = false
+        this.achievementAchieved = this.game.achievements.groups.get('weatherRain')?.items[0].achieved
 
         this.setGeometry()
         this.setMaterial()
