@@ -82,7 +82,23 @@ export class World
         else if(step === 2)
         {
             this.whispers = new Whispers()
+            // this.setPhysicalFloor()
         }
+    }
+
+    setPhysicalFloor()
+    {
+        this.game.objects.add(
+            null,
+            {
+                type: 'fixed',
+                friction: 0.25,
+                restitution: 0,
+                colliders: [
+                    { shape: 'cuboid', parameters: [ 1000, 1, 1000 ], position: { x: 0, y: - 1.01, z: 0 }, category: 'floor' },
+                ]
+            }
+        )
     }
 
     setTestKtx()

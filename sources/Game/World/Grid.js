@@ -20,7 +20,6 @@ export class Grid
         }
 
         this.setVisual()
-        // this.setPhysical()
     }
 
     setVisual()
@@ -55,7 +54,6 @@ export class Grid
 
             return defaultMaterial.outputNode
         })()
-        
 
         this.mesh = new THREE.Mesh(
             new THREE.PlaneGeometry(100, 100),
@@ -88,21 +86,6 @@ export class Grid
                 lineDebugPanel.addBinding({ color: '#' + line.color.value.getHexString(THREE.SRGBColorSpace) }, 'color').on('change', tweak => line.color.value.set(tweak.value))
             }
         }
-    }
-
-    setPhysical()
-    {
-        this.game.objects.add(
-            null,
-            {
-                type: 'fixed',
-                friction: 0.25,
-                restitution: 0,
-                colliders: [
-                    { shape: 'cuboid', parameters: [ 1000, 1, 1000 ], position: { x: 0, y: - 1.01, z: 0 }, category: 'floor' },
-                ]
-            }
-        )
     }
 
     show()
