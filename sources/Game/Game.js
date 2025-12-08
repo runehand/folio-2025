@@ -187,7 +187,7 @@ export class Game
         this.map = new Map()
         this.title = new Title()
         // this.monitoring = new Monitoring()
-        this.world.init(1)
+        this.world.step(1)
 
         // Pre-render if quality high
         if(this.quality.level === 0 && this.rendering.renderer.backend.isWebGPUBackend)

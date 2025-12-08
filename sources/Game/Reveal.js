@@ -210,7 +210,7 @@ export class Reveal
         else if(step === 2)
         {
             this.game.interactivePoints.recover()
-            this.game.world.init(2)
+            this.game.world.step(2)
             this.game.world.grid.destroy()
             this.game.world.intro.destroy()
             this.game.world.intro = null
