@@ -324,15 +324,22 @@ export class Whispers
         {
             const sanatized = sanatize(this.menu.input.value, false, true, true)
             this.menu.previewMessageText.textContent = sanatized.length ? sanatized : 'Your message here'
-            this.menu.input.value = sanatized
+
+            if(this.menu.input.textContent !== sanatized)
+                this.menu.input.value = sanatized
+
             updateGroup()
         })
 
         this.menu.previewMessageText.addEventListener('input', (event) =>
         {
             const sanatized = sanatize(this.menu.previewMessageText.textContent, false, true, true)
-            this.menu.previewMessageText.textContent = sanatized
+
+            if(this.menu.previewMessageText.textContent !== sanatized)
+                this.menu.previewMessageText.textContent = sanatized
+
             this.menu.input.value = sanatized
+
             updateGroup()
         })
 
