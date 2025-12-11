@@ -51,14 +51,15 @@ export class TimeMachine extends Area
             this.game.resources.timeMachineScreenMGSTexture,
         ]
 
-        const sound = this.game.audio.register({
+        const alertSound = this.game.audio.register({
             path: 'sounds/tv/alert.mp3',
             autoplay: false,
             loop: false,
             volume: 0.3,
-            preload: false
+            preload: true
         })
-        
+    
+
         const tv = this.references.items.get('tv')[0]
         tv.userData.object.physical.onCollision = (force, position) =>
         {
@@ -69,8 +70,12 @@ export class TimeMachine extends Area
                 material.outputNode = screenOutputNode()
                 material.needsUpdate = true
 
+                const clickSound = this.game.audio.groups.get('click')
+                if(clickSound)
+                    clickSound.play(true)
+
                 if(collideIndex === 1)
-                    sound.play()
+                    alertSound.play()
 
                 gsap.delayedCall(1, () =>
                 {
@@ -91,7 +96,7 @@ export class TimeMachine extends Area
             const stripes = texture(
                 this.game.noises.perlin,
                 vec2(
-                    baseUv.y.sub(this.game.ticker.elapsedScaledUniform.mul(0.1)),
+                    baseUv.y.add(this.game.ticker.elapsedScaledUniform.mul(0.1)),
                     0
                 )
             ).r.smoothstep(0, 1)
