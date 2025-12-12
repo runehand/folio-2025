@@ -137,7 +137,7 @@ export class Map
     {
         // Inputs keyboard
         this.game.inputs.addActions([
-            { name: 'map', categories: [ 'modal', 'menu', 'racing', 'cinematic', 'wandering' ], keys: [ 'Keyboard.m', 'Keyboard.KeyM' ] },
+            { name: 'map', categories: [ 'modal', 'menu', 'wandering' ], keys: [ 'Keyboard.m', 'Keyboard.KeyM' ] },
         ])
         this.game.inputs.events.on('map', (action) =>
         {
