@@ -110,9 +110,27 @@ export class Lighting
         this.light = new THREE.DirectionalLight(0xffffff, 5)
         this.light.position.setFromSpherical(this.spherical)
         this.light.castShadow = true
+        // this.light.shadow.mapType = THREE.UnsignedByteType
+        // this.light.shadow.mapType = THREE.ByteType
+        // this.light.shadow.mapType = THREE.ShortType
+        // this.light.shadow.mapType = THREE.UnsignedShortType
+        // this.light.shadow.mapType = THREE.IntType
+        // this.light.shadow.mapType = THREE.UnsignedIntType
+        // this.light.shadow.mapType = THREE.FloatType
+        // this.light.shadow.mapType = THREE.HalfFloatType
+        // this.light.shadow.mapType = THREE.UnsignedShort4444Type
+        // this.light.shadow.mapType = THREE.UnsignedInt248Type
+        // this.light.shadow.mapType = THREE.UnsignedInt5999Type
+        // this.light.shadow.mapType = THREE.UnsignedInt101111Type
         
         this.game.scene.add(this.light)
         this.game.scene.add(this.light.target)
+
+        setTimeout(() =>
+        {
+            console.log(this.light.shadow.map)
+            console.log(this.light.shadow.mapType)
+        }, 2000)
     }
 
     setHelpers()
