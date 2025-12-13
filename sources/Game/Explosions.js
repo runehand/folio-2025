@@ -56,7 +56,7 @@ export class Explosions
                 {
                     if(finalStrength > bulletTimeStrengthThreshold)
                     {
-                        game.time.bulletTime.activate()
+                        this.game.time.bulletTime.activate()
 
                         return true
                     }
