@@ -1291,7 +1291,7 @@ export class CircuitArea extends Area
                     type: 'circuitInsert',
                     countryCode: this.menu.inputFlag.country ? this.menu.inputFlag.country.code : '',
                     tag: sanatized,
-                    duration: 21000,
+                    duration: Math.round(this.timer.elapsedTime * 1000),
                     checkpointTimings: this.checkpoints.timings
                 })
 
