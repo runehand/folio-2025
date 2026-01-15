@@ -18,7 +18,6 @@ export class LandingArea extends Area
         this.setKiosk()
         this.setControls()
         this.setBonfire()
-        // this.setFWA()
         this.setAchievement()
     }
 
@@ -253,25 +252,6 @@ export class LandingArea extends Area
                 this.game.inputs.interactiveButtons.removeItems(['interact'])
             }
         )
-    }
-
-    setFWA()
-    {
-        let i = 0
-        const positions = [
-            new THREE.Vector3(42.361, 0, 41.1709136),
-            new THREE.Vector3(45.487606048583984, 0, 37.69718551635742),
-        ]
-        const pop = () =>
-        {
-            i++
-            const position = positions[i % positions.length]
-            this.game.world.confetti.pop(position)
-            
-            setTimeout(pop, 500 + Math.random() * 1500)
-        }
-        setTimeout(pop, 2000)
-        
     }
 
     setAchievement()

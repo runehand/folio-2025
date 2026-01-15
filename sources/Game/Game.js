@@ -93,7 +93,7 @@ export class Game
         this.rendering = new Rendering()
         await this.rendering.setRenderer()
         this.resources = await this.resourcesLoader.load([
-            [ 'respawnsReferencesModel',    'respawns/respawnsReferences-compressed.glb', 'gltf' ],
+            [ 'respawnsReferencesModel',    'respawns/respawnsReferences.glb', 'gltf' ],
             [ 'behindTheSceneStarsTexture', 'behindTheScene/stars.ktx',                   'textureKtx', (resource) => { resource.colorSpace = THREE.SRGBColorSpace; resource.minFilter = THREE.NearestFilter; resource.magFilter = THREE.NearestFilter; resource.generateMipmaps = false; resource.wrapS = THREE.RepeatWrapping; resource.wrapT = THREE.RepeatWrapping; } ],
             [ 'soundTexture',               'intro/sound.ktx',                            'textureKtx', (resource) => { resource.minFilter = THREE.LinearFilter; resource.magFilter = THREE.LinearFilter; resource.generateMipmaps = false; resource.repeat.x = 0.5; } ],
             [ 'paletteTexture',             'palette.ktx',                                'textureKtx', (resource) => { resource.minFilter = THREE.NearestFilter; resource.magFilter = THREE.NearestFilter; resource.generateMipmaps = false; resource.colorSpace = THREE.SRGBColorSpace; } ],
@@ -132,7 +132,7 @@ export class Game
                 [ 'bricksModel',                           'bricks/bricks-compressed.glb',                               'gltf' ],
                 [ 'fencesModel',                           'fences/fences-compressed.glb',                               'gltf' ],
                 [ 'benchesModel',                          'benches/benches-compressed.glb',                             'gltf' ],
-                [ 'explosiveCratesModel',                  'explosiveCrates/explosiveCrates-compressed.glb',             'gltf' ],
+                [ 'explosiveCratesModel',                  'explosiveCrates/explosiveCrates.glb',             'gltf' ],
                 [ 'lanternsModel',                         'lanterns/lanterns-compressed.glb',                           'gltf' ],
                 [ 'terrainTexture',                        'terrain/terrain.ktx',                                        'textureKtx', (resource) => { resource.flipY = false; } ],
                 [ 'terrainModel',                          'terrain/terrain-compressed.glb',                             'gltf' ],
@@ -144,7 +144,7 @@ export class Game
                 [ 'cherryTreesVisualModel',                'cherryTrees/cherryTreesVisual-compressed.glb',               'gltf' ],
                 [ 'cherryTreesReferencesModel',            'cherryTrees/cherryTreesReferences-compressed.glb',           'gltf' ],
                 [ 'sceneryModel',                          'scenery/scenery-compressed.glb',                             'gltf' ],
-                [ 'areasModel',                            'areas/areas-compressed.glb',                                 'gltf' ],
+                [ 'areasModel',                            'areas/areas.glb',                                 'gltf' ],
                 [ 'poleLightsModel',                       'poleLights/poleLights-compressed.glb',                       'gltf' ],
                 [ 'whisperFlameTexture',                   'whispers/whisperFlame.ktx',                                  'textureKtx', (resource) => { resource.minFilter = THREE.LinearFilter; resource.magFilter = THREE.LinearFilter; resource.generateMipmaps = false } ],
                 [ 'satanStarTexture',                      'areas/satanStar.ktx',                                        'textureKtx', (resource) => { resource.minFilter = THREE.LinearFilter; resource.magFilter = THREE.LinearFilter; resource.generateMipmaps = false } ],
