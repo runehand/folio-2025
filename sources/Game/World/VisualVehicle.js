@@ -20,6 +20,7 @@ export class VisualVehicle
         this.setMainGroundTrack()
         this.setWheels()
         this.setBlinkers()
+        this.setBackLights()
         this.setAntenna()
         this.setBoostTrails()
         this.setBoostAnimation()
@@ -67,6 +68,7 @@ export class VisualVehicle
             'blinkerLeft',
             'blinkerRight',
             'stopLights',
+            'backLights',
             'wheelContainer',
             'antenna',
             'cell1',
@@ -115,6 +117,10 @@ export class VisualVehicle
         // Stop lights
         if(this.parts.stopLights)
             this.parts.stopLights.visible = false
+
+        // Back lights
+        if(this.parts.backLights)
+            this.parts.backLights.visible = false
 
         // Wheel
         this.game.materials.updateObject(this.parts.wheelContainer)
@@ -341,6 +347,12 @@ export class VisualVehicle
         this.game.inputs.events.on('right', this.blinkers.rightCallback)
     }
 
+    setBackLights()
+    {
+        this.backLights = {}
+        this.backLights.material = new THREE.MeshBasicNodeMaterial({ colorNode: vec3(2.2) })
+    }
+
     setAntenna()
     {
         if(!this.parts.antenna)
@@ -472,11 +484,38 @@ export class VisualVehicle
             this.antenna.headAxle.rotation.z += this.game.ticker.deltaScaled * antennaRotationSpeed
         }
 
-        // Stop lights
+        // Stop/back lights
         if(this.game.player.braking)
-            this.parts.stopLights.visible = true
+        {
+            if(this.parts.stopLights)
+                this.parts.stopLights.visible = true
+
+            if(this.parts.backLights)
+            {
+                this.parts.backLights.visible = true
+                this.parts.backLights.material = this.game.materials.getFromName('emissiveOrangeRadialGradient')
+            }
+        }
         else
-            this.parts.stopLights.visible = false
+        {
+            if(this.parts.stopLights)
+                this.parts.stopLights.visible = false
+
+            if(this.parts.backLights)
+            {
+                // Backward
+                if(this.game.player.accelerating < 0)
+                {
+                    this.parts.backLights.visible = true
+                    this.parts.backLights.material = this.backLights.material
+                }
+                // Backward
+                else
+                {
+                    this.parts.backLights.visible = false
+                }
+            }
+        }
 
         // Boost trails
         const trailAlpha = physicalVehicle.goingForward && this.game.player.boosting && this.game.player.accelerating > 0 ? 1 : 0
