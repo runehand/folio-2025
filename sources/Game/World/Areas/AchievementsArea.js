@@ -243,7 +243,6 @@ export class AchievementsArea extends Area
 
             material.scaleNode = Fn(() =>
             {
-                return float(0.2)
                 const scale = min(
                     progressVarying.remapClamp(0, 0.1, 0, 1),
                     progressVarying.remapClamp(0.7, 0.8, 1, 0),
