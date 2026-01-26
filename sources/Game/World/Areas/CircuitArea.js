@@ -655,14 +655,14 @@ export class CircuitArea extends Area
     setRespawn()
     {
         this.game.inputs.addActions([
-            { name: 'circuitRespawn', categories: [ 'racing' ], keys: [ 'Keyboard.KeyR', 'Gamepad.select' ] },
+            { name: 'circuitRestart', categories: [ 'racing' ], keys: [ 'Keyboard.KeyR', 'Gamepad.select' ] },
         ])
 
         // Reset
-        this.game.inputs.events.on('circuitRespawn', (action) =>
+        this.game.inputs.events.on('circuitRestart', (action) =>
         {
             if(action.active)
-                this.respawn()
+                this.restart()
         })
     }
 
@@ -1371,6 +1371,9 @@ export class CircuitArea extends Area
         // Inputs filters
         this.game.inputs.filters.clear()
         this.game.inputs.filters.add('racing')
+
+        // Starting timeline
+        this.startAnimation.timeline.pause()
 
         // Overlay > Show
         this.game.overlay.show(() =>
