@@ -81,9 +81,8 @@ export class Confetti
 
             material.positionNode = Fn(() =>
             {
-                // Manual instancing so that the positionNode is also applied to the shadow??
+                // Realize nodes so that the shadow updates too
                 instance(this.count, instanceMatrix).toStack()
-                
 
                 const basePosition = positionLocal
 
@@ -123,7 +122,7 @@ export class Confetti
             {
                 const matrix = new THREE.Matrix4()
 
-                const position = new THREE.Vector3(Math.random(), Math.random(), Math.random())
+                const position = new THREE.Vector3(0, 0, 0)
                 const quaternion = new THREE.Quaternion().random()
                 const scale = new THREE.Vector3(1, 1, 1)//.setScalar(0.5 + Math.random() * 0.5)
 
