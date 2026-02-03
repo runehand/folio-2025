@@ -164,6 +164,12 @@ export class Lighting
 
         this.light.shadow.camera.updateProjectionMatrix()
         this.light.shadow.mapSize.set(this.mapSize, this.mapSize)
+
+        this.game.quality.events.on('change', () =>
+        {
+            this.mapSize = this.game.quality.level === 0 ? 2048 : 512
+            this.light.shadow.mapSize.set(this.mapSize, this.mapSize)
+        })
     }
 
     updateCoordinates()
