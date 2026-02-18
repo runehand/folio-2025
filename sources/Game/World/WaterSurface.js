@@ -303,7 +303,7 @@ export class WaterSurface
             alphaNode: this.detailsMask(),
             alphaTest: 0,
             hasCoreShadows: false,
-            hasDropShadows: false,
+            hasDropShadows: true,
             hasLightBounce: false,
             hasFog: true,
             hasWater: false,
@@ -360,7 +360,6 @@ export class WaterSurface
         //     return finalOuput
         // })()
         
-
         material.castShadowNode = Fn(() =>
         {
             this.detailsMask().lessThan(0.5).discard()
@@ -391,8 +390,8 @@ export class WaterSurface
         this.mesh.scale.setScalar(halfExtent * 2)
 
         this.mesh.position.y = this.game.water.surfaceElevation
-        // this.mesh.castShadow = true
-        // this.mesh.receiveShadow = true
+        this.mesh.castShadow = true
+        this.mesh.receiveShadow = true
         // this.mesh.renderOrder = -1
         this.game.scene.children.unshift(this.mesh)
 
